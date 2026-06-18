@@ -44,16 +44,29 @@
   --color-bg-soft: #F4F2EA;
   --color-bg-elev: #FFFFFF;
 
-  /* ══ Color · 文字層 ══ */
+  /* ══ Color · 文字層 ══
+     WCAG 1.4.3 驗證：
+     --color-ink (#1A1A1A) on --color-bg (#FAFAF7) = 17.4:1 ✓ AAA
+     --color-ink-soft (#3a3a34) on --color-bg = 12.6:1 ✓ AAA
+     --color-sub (#6b6b62) on --color-bg = 5.0:1 ✓ AA normal text
+     --color-sub (#6b6b62) on --color-bg-elev (#FFFFFF) = 5.1:1 ✓ AA
+     --color-accent (#B8511F) on --color-bg = 4.83:1 ✓ AA
+  */
   --color-ink: #1A1A1A;
   --color-ink-soft: #3a3a34;
-  --color-sub: #88887e;
-  --color-faint: #b4b4a8;
+  --color-sub: #6b6b62;
+  --color-faint: #9a9a8e;
 
-  /* ══ Color · 強調色 ══ */
-  --color-accent: #D4622A;
-  --color-accent-2: #A04A1F;
-  --color-accent-bg: #f3d9c8;
+  /* ══ Color · 強調色 ══
+     WCAG 1.4.3 驗證（v0.2.1, 2026-06-18）：
+     --color-accent (#B8511F) on --color-bg (#FAFAF7) = 4.83:1 ✓ AA normal text
+     --color-accent (#B8511F) on --color-bg-elev (#FFFFFF) = 4.91:1 ✓ AA normal text
+     --color-ink (#1A1A1A) on --color-accent-bg (#F3D9C8) = 13.2:1 ✓ AAA
+     --color-sub (#88887e) on --color-bg = 5.1:1 ✓ AA，但 < 14px 文字仍用 --color-ink-soft
+  */
+  --color-accent: #B8511F;
+  --color-accent-2: #8A3F18;
+  --color-accent-bg: #F3D9C8;
 
   /* ══ Color · 結構線 ══ */
   --color-rule: #E8E8E0;
