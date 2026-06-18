@@ -2,6 +2,36 @@
 
 > 水感知識庫 — minimax-vortex 獨立站（基於 5 份設計研究 + 41 項 checklist）
 
+## 🚀 怎麼看這個網站
+
+**網址**：[https://hangsau.github.io/minimax-vortex/](https://hangsau.github.io/minimax-vortex/)
+
+**首次設定**（站主一次性操作）：
+1. 進 GitHub repo：[`Hangsau/minimax-vortex`](https://github.com/Hangsau/minimax-vortex) → Settings → Pages
+2. Source 設為 **「GitHub Actions」**（不要用「Deploy from a branch」— 那是舊 v4 的 gh-pages 部署方式）
+3. 之後每次 `git push` 會自動 build + deploy（~2-5 分鐘）
+
+**驗證 deploy 狀態**：
+- GitHub Actions：[`/actions`](https://github.com/Hangsau/minimax-vortex/actions)
+- 找 workflow「Deploy minimax-vortex to GitHub Pages」— 看到 ✓ success = 上線
+- 如果顯示「Queued」或「In progress」— 等一下再看
+
+**為什麼剛 push 還看不到 v0.2.1**：
+- v4 時代 Pages 用「gh-pages branch」部署（GitHub 預設）
+- v0.2.1 改成 GitHub Actions — 站主要在 Settings 手動切
+- 切換後，新 push 才會 deploy 到 Pages
+
+**Troubleshooting**：
+
+| 症狀 | 原因 | 解法 |
+|------|------|------|
+| 網站顯示 v4 內容 | Pages 還在 deploy gh-pages branch | Settings → Pages → Source 改「GitHub Actions」 |
+| 404 Not Found | repo 還沒啟用 Pages | Settings → Pages → 啟用，選 source |
+| workflow 顯示失敗 | build error（npm install / astro build） | 看 run log，修正後重 push |
+| workflow queued 太久 | GitHub 排隊 | 等（高峰期可能 10+ 分鐘） |
+
+---
+
 ## 技術棧
 
 - **Astro 5.18.2** — 靜態內容站（SSG）
