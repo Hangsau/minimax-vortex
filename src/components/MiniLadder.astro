@@ -1,0 +1,112 @@
+---
+/**
+ * MiniLadder.astro — L0-L6 共用座標系（per entry-wayfinding H4）
+ *
+ * 每個 vortex 內頁可在開頭嵌入此元件，標示當前頁面在水感脊椎線的哪個層級。
+ * 用法：
+ *   <MiniLadder levels={['L0', 'L1']} label="這個頁面落在水感的哪一層" />
+ */
+export interface Props {
+  /** 哪些層級要打亮 */
+  levels: string[];
+  /** aria-label 描述 */
+  label?: string;
+  /** 顯示模式（compact = 小尺寸；full = 大尺寸） */
+  variant?: 'compact' | 'full';
+}
+
+const { levels = [], label = '水感層級', variant = 'full' } = Astro.props;
+const allLevels = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+---
+
+<div
+  class:list={['mini-ladder', `mini-ladder--${variant}`]}
+  role="navigation"
+  aria-label={label}
+>
+  <span class="mini-ladder__cap">{label}</span>
+  <ol class="mini-ladder__nodes">
+    {allLevels.map((lv) => (
+      <li
+        class:list={[
+          'mini-ladder__node',
+          { 'is-on': levels.includes(lv) },
+        ]}
+      >
+        {lv}
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  .mini-ladder {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-mono);
+  }
+  .mini-ladder__cap {
+    font-size: var(--type-xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-sub);
+    flex-shrink: 0;
+  }
+  .mini-ladder__nodes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0;
+    counter-reset: ladder;
+  }
+  .mini-ladder__node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 var(--space-1);
+    font-size: var(--type-sm);
+    font-weight: 600;
+    color: var(--color-sub);
+    border: 1px solid var(--color-rule);
+    border-right: none;
+    background: var(--color-bg-elev);
+    transition: background-color var(--duration-short) var(--ease-standard),
+                color var(--duration-short) var(--ease-standard);
+  }
+  .mini-ladder__node:last-child {
+    border-right: 1px solid var(--color-rule);
+  }
+  .mini-ladder__node.is-on {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+  .mini-ladder__node.is-on + .mini-ladder__node {
+    border-left-color: var(--color-accent);
+  }
+
+  .mini-ladder--compact .mini-ladder__node {
+    min-width: 28px;
+    height: 28px;
+    font-size: var(--type-xs);
+  }
+  .mini-ladder--compact .mini-ladder__cap {
+    font-size: var(--type-tiny);
+  }
+
+  @media (max-width: 600px) {
+    .mini-ladder {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-1);
+    }
+    .mini-ladder__node {
+      min-width: 32px;
+      height: 32px;
+    }
+  }
+</style>

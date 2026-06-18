@@ -1,0 +1,616 @@
+---
+/**
+ * index.astro — minimax-vortex 首頁
+ *
+ * 設計依據（5 份研究 + 41 項 checklist）：
+ * - presentation-layout §4.2 — 3 大群 + 1 摺合區重排
+ * - entry-wayfinding H2 — 痛點卡推廣到 hero
+ * - entry-wayfinding H4 — L0-L6 共用座標系
+ * - design-principles §2 — typography (38em measure / 1.875 行高)
+ * - design-craft §4 — Material 3 motion + Duration Tokens
+ *
+ * 結構決策（不是 12 等重入口）：
+ *   1. Hero — 主焦點
+ *   2. 群 1「先懂」 — 痛點卡 + L0-L6 概覽
+ *   3. 群 2「開始練」 — 六式 grid 2×3
+ *   4. 群 3「長期」 — ADM + 週期化 並排
+ *   5. 摺合區 — 依需求找 + 跨式查
+ */
+import Base from '../layouts/Base.astro';
+import MiniLadder from '../components/MiniLadder.astro';
+
+const strokes = [
+  { zh: '自由式', en: 'Freestyle', slug: 'freestyle', desc: '最熟悉的泳姿，從划手效率到全身協調。' },
+  { zh: '仰式', en: 'Backstroke', slug: 'backstroke', desc: '看天空的泳姿，仰臥姿勢下的旋轉與節奏。' },
+  { zh: '蛙式', en: 'Breaststroke', slug: 'breaststroke', desc: '最慢但最省力，蹬腿與划水的時序。' },
+  { zh: '蝶式', en: 'Butterfly', slug: 'butterfly', desc: '最具爆發力，雙臂同步與海豚踢的整合。' },
+  { zh: '海豚踢', en: 'Underwater Dolphin Kick', slug: 'underwater-dolphin-kick', desc: '水下推進的核心，海豚擺動的傳動鏈。' },
+  { zh: '出發轉身', en: 'Starts & Turns', slug: 'starts-turns', desc: '比賽的隱形戰場，動量守恆與時間差。' },
+];
+
+const painPoints = [
+  { l: 'L0', txt: '換氣嗆水', target: '/practice/?filter=breathing' },
+  { l: 'L0-L1', txt: '腳一直沉', target: '/practice/?filter=kick' },
+  { l: 'L1-L2', txt: '划手沒推進感', target: '/practice/?filter=arm' },
+  { l: 'L0-L6', txt: '划 25m 就沒力', target: '/practice/?filter=endurance' },
+  { l: 'L3-L6', txt: '轉身後速度掉太多', target: '/practice/?filter=turns' },
+  { l: 'L0-L2', txt: '看影片學會，泳池做不到', target: '/practice/?filter=transfer' },
+];
+
+const psychologyChips = [
+  { zh: '怕水 / 恐懼', band: 'L0', target: '/psychology/fear/' },
+  { zh: '身體僵硬 / 身心交互', band: 'L0-L2', target: '/psychology/body-mind/' },
+  { zh: '提不起勁 / 動機', band: 'L0-L6', target: '/psychology/motivation/' },
+  { zh: '上場分心 / 注意力', band: 'L3-L6', target: '/psychology/attention/' },
+  { zh: '壓力崩潰 / 心流', band: 'L6', target: '/psychology/flow/' },
+];
+---
+
+<Base title="minimax-vortex" description="水感知識庫 — 從水感發展脊椎到六式技術細節，從動作視覺到心理地基。">
+
+  <!-- ══════ Hero — 主焦點 ══════ -->
+  <section class="hero">
+    <div class="hero__head">
+      <p class="eyebrow">A Notebook of Water Sense</p>
+      <h1 class="hero__title">
+        游泳技術是<br />水感長出來的結果
+      </h1>
+      <p class="hero__lead">
+        這本手帳先帶你弄懂水感是什麼，再翻到某一式，把感知一格一格練成動作。
+      </p>
+      <div class="hero__cta">
+        <a href="/theory/water-sense/" class="btn btn--primary">
+          <span class="btn__num">00</span>
+          <span class="btn__text">
+            <span class="btn__title">完全沒概念？先搞懂「水感」</span>
+            <span class="btn__sub">10 分鐘弄懂水感怎麼回事——整個計劃的起點</span>
+          </span>
+          <span class="btn__arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 群 1：先懂（Theory） ══════ -->
+  <section class="sec sec--theory">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">壹</span>先懂</h2>
+      <span class="eyebrow sec__tag">Theory</span>
+    </header>
+    <p class="sec__lead">
+      不知道從哪開始？挑一個「現在最接近你（或你帶的人）」的描述，它會帶你到對的地方。
+    </p>
+
+    <!-- 痛點卡 -->
+    <div class="pain-grid">
+      {painPoints.map((p) => (
+        <a href={p.target} class="pain-card">
+          <span class="pain-card__l">{p.l}</span>
+          <span class="pain-card__txt">{p.txt}</span>
+          <span class="pain-card__go">從這裡 →</span>
+        </a>
+      ))}
+    </div>
+
+    <!-- L0-L6 mini 階梯 -->
+    <div class="ladder-block">
+      <MiniLadder
+        levels={['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']}
+        label="水感發展脊椎"
+      />
+      <p class="ladder-block__desc">
+        水感不是教動作教出來的，是沿 L0 → L6 一級一級長出來的感知。每級對應特定訓練方法、觀察指標、量化基準。
+      </p>
+      <a href="/levels/" class="ladder-block__link">看 L0–L6 完整發展序列 →</a>
+    </div>
+
+    <!-- 心理 chips -->
+    <div class="psych-chips">
+      <p class="psych-chips__lead">或從心理狀態切入（按處境挑一個，不按主題名）：</p>
+      <div class="psych-chips__list">
+        {psychologyChips.map((c) => (
+          <a href={c.target} class="psych-chip">
+            <span class="psych-chip__zh">{c.zh}</span>
+            <span class="psych-chip__band">{c.band}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 群 2：開始練（Practice） ══════ -->
+  <section class="sec sec--practice">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">貳</span>開始練</h2>
+      <span class="eyebrow sec__tag">Practice · 6 Strokes</span>
+    </header>
+    <p class="sec__lead">
+      讀過水感之後再進來。挑一式，每個動作都是「感知的輸出」，不是要照抄的姿勢。
+    </p>
+
+    <div class="strokes-grid">
+      {strokes.map((s) => (
+        <a href={`/strokes/${s.slug}/`} class="stroke-card">
+          <span class="stroke-card__zh">{s.zh}</span>
+          <span class="stroke-card__en">{s.en}</span>
+          <span class="stroke-card__desc">{s.desc}</span>
+          <span class="stroke-card__go">進入 →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- ══════ 群 3：長期（Long-term） ══════ -->
+  <section class="sec sec--longterm">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">參</span>長期</h2>
+      <span class="eyebrow sec__tag">Long-term Development</span>
+    </header>
+    <p class="sec__lead">
+      從單一動作退後一步看：選手從學習訓練到登上獎牌台，長程應該長出什麼能力。
+    </p>
+
+    <div class="longterm-grid">
+      <a href="/adm/" class="longterm-card">
+        <span class="longterm-card__tag">ADM</span>
+        <span class="longterm-card__zh">運動員發展矩陣</span>
+        <span class="longterm-card__en">Athlete Development Matrix</span>
+        <p class="longterm-card__desc">
+          4 支柱 × 4 階段（L2T → T2W）的長期能力對照，含各式技術標準。
+        </p>
+      </a>
+      <a href="/periodization/" class="longterm-card">
+        <span class="longterm-card__tag">PZ</span>
+        <span class="longterm-card__zh">訓練週期化</span>
+        <span class="longterm-card__en">Periodization</span>
+        <p class="longterm-card__desc">
+          階段、中觀／微觀週期、賽前減量達峰、能量系統分區。源自 Bompa 6th ed.。
+        </p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════ 摺合區：查資料（Reference） ══════ -->
+  <section class="sec sec--reference">
+    <details class="ref-collapsible">
+      <summary class="ref-collapsible__summary">
+        <span class="sec__title sec__title--small">
+          <span class="sec__no">肆</span>想直接查資料？
+        </span>
+        <span class="ref-collapsible__hint">▾</span>
+      </summary>
+      <div class="ref-collapsible__body">
+        <p class="sec__lead">
+          兩種工具：依需求找練習（已知道想練什麼）或跨泳式查資料（已知道要查什麼）。
+        </p>
+        <div class="ref-grid">
+          <a href="/practice/?mode=needs" class="ref-card">
+            <span class="ref-card__zh">依需求找練習</span>
+            <span class="ref-card__en">Find Drills by Need</span>
+            <p class="ref-card__desc">挑環節 + 階段 + 泳式三軸，即時列出對應練習。</p>
+          </a>
+          <a href="/practice/?mode=lookup" class="ref-card">
+            <span class="ref-card__zh">跨泳式查資料</span>
+            <span class="ref-card__en">Cross-Stroke Reference</span>
+            <p class="ref-card__desc">誤區、機制、L 指標三類，跨六式集中查詢。</p>
+          </a>
+        </div>
+      </div>
+    </details>
+  </section>
+
+</Base>
+
+<style>
+  /* ══════ Hero ══════ */
+  .hero {
+    padding: var(--space-6) 0 var(--space-7);
+    border-bottom: 2px solid var(--color-rule-strong);
+  }
+  .hero__head {
+    max-width: var(--measure-narrow);
+  }
+  .hero__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(var(--type-2xl), 6vw, var(--type-4xl));
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tight);
+    margin: var(--space-2) 0 var(--space-4);
+  }
+  .hero__lead {
+    font-family: var(--font-serif);
+    font-size: var(--type-md);
+    line-height: var(--line-body-cjk);
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-5);
+  }
+  .hero__cta {
+    margin-top: var(--space-4);
+  }
+
+  /* CTA button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-rule-strong);
+    background: var(--color-bg-elev);
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: transform var(--duration-short) var(--ease-standard),
+                border-color var(--duration-short) var(--ease-standard);
+    min-height: 44px;
+  }
+  .btn:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+  }
+  .btn--primary {
+    border-left: 4px solid var(--color-accent);
+  }
+  .btn__num {
+    font-family: var(--font-mono);
+    font-size: var(--type-2xl);
+    font-weight: 700;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+  .btn__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .btn__title {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--type-md);
+    line-height: 1.3;
+  }
+  .btn__sub {
+    font-size: var(--type-sm);
+    color: var(--color-sub);
+  }
+  .btn__arrow {
+    font-family: var(--font-mono);
+    font-size: var(--type-lg);
+    color: var(--color-accent);
+  }
+
+  /* ══════ Section 共用 ══════ */
+  .sec {
+    margin-top: var(--space-7);
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--color-rule-strong);
+  }
+  .sec:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+  .sec__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .sec__title {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: clamp(var(--type-xl), 4vw, var(--type-2xl));
+    line-height: 1.1;
+    margin: 0;
+  }
+  .sec__title--small {
+    font-size: var(--type-lg);
+  }
+  .sec__no {
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    color: var(--color-accent);
+    margin-right: 0.4em;
+    font-weight: 600;
+  }
+  .sec__tag {
+    color: var(--color-sub);
+  }
+  .sec__lead {
+    font-family: var(--font-serif);
+    font-size: var(--type-sm);
+    line-height: var(--line-body-cjk);
+    color: var(--color-ink-soft);
+    max-width: var(--measure-narrow);
+    margin-bottom: var(--space-5);
+  }
+
+  /* ══════ 群 1：先懂 — 痛點卡 ══════ */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+  .pain-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg-elev);
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: border-color var(--duration-short) var(--ease-standard);
+    min-height: 88px;
+  }
+  .pain-card:hover {
+    border-color: var(--color-accent);
+  }
+  .pain-card__l {
+    font-family: var(--font-mono);
+    font-size: var(--type-tiny);
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--color-sub);
+    text-transform: uppercase;
+  }
+  .pain-card__txt {
+    font-family: var(--font-serif);
+    font-size: var(--type-md);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .pain-card__go {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--color-accent);
+    margin-top: auto;
+  }
+
+  /* L0-L6 mini 階梯 */
+  .ladder-block {
+    border: 1px solid var(--color-rule);
+    padding: var(--space-3);
+    margin-bottom: var(--space-5);
+    background: var(--color-bg-soft);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .ladder-block__desc {
+    font-size: var(--type-sm);
+    color: var(--color-ink-soft);
+    margin: 0;
+    line-height: var(--line-body-cjk);
+  }
+  .ladder-block__link {
+    font-family: var(--font-mono);
+    font-size: var(--type-sm);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  /* 心理 chips */
+  .psych-chips {
+    margin-top: var(--space-4);
+  }
+  .psych-chips__lead {
+    font-size: var(--type-sm);
+    color: var(--color-sub);
+    margin-bottom: var(--space-2);
+  }
+  .psych-chips__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .psych-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev);
+    font-size: var(--type-sm);
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: border-color var(--duration-short) var(--ease-standard);
+    min-height: 32px;
+  }
+  .psych-chip:hover {
+    border-color: var(--color-accent);
+  }
+  .psych-chip__zh {
+    font-family: var(--font-serif);
+  }
+  .psych-chip__band {
+    font-family: var(--font-mono);
+    font-size: var(--type-tiny);
+    letter-spacing: var(--tracking-mono);
+    color: var(--color-sub);
+  }
+
+  /* ══════ 群 2：六式 grid 2×3 ══════ */
+  .strokes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+  }
+  .stroke-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg-elev);
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: border-color var(--duration-short) var(--ease-standard);
+    min-height: 140px;
+  }
+  .stroke-card:hover {
+    border-color: var(--color-accent);
+  }
+  .stroke-card__zh {
+    font-family: var(--font-serif);
+    font-size: var(--type-md);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .stroke-card__en {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    letter-spacing: var(--tracking-mono);
+    color: var(--color-sub);
+    text-transform: uppercase;
+  }
+  .stroke-card__desc {
+    font-size: var(--type-sm);
+    color: var(--color-ink-soft);
+    line-height: 1.4;
+    margin: var(--space-1) 0;
+    flex-grow: 1;
+  }
+  .stroke-card__go {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--color-accent);
+    margin-top: auto;
+  }
+
+  /* ══════ 群 3：長期 — 並排雙格 ══════ */
+  .longterm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+  .longterm-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--color-rule-strong);
+    background: var(--color-bg-elev);
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: border-color var(--duration-short) var(--ease-standard);
+  }
+  .longterm-card:hover {
+    border-color: var(--color-accent);
+  }
+  .longterm-card__tag {
+    font-family: var(--font-mono);
+    font-size: var(--type-tiny);
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--color-accent);
+    text-transform: uppercase;
+  }
+  .longterm-card__zh {
+    font-family: var(--font-serif);
+    font-size: var(--type-md);
+    font-weight: 600;
+  }
+  .longterm-card__en {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--color-sub);
+  }
+  .longterm-card__desc {
+    font-size: var(--type-sm);
+    color: var(--color-ink-soft);
+    line-height: 1.4;
+    margin: var(--space-2) 0 0;
+  }
+
+  /* ══════ 摺合區 ══════ */
+  .ref-collapsible {
+    border-top: 2px solid var(--color-rule-strong);
+    padding-top: var(--space-4);
+    margin-top: var(--space-7);
+  }
+  .ref-collapsible__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+  }
+  .ref-collapsible__summary::-webkit-details-marker {
+    display: none;
+  }
+  .ref-collapsible__hint {
+    font-family: var(--font-mono);
+    font-size: var(--type-md);
+    color: var(--color-accent);
+    transition: transform var(--duration-short) var(--ease-standard);
+  }
+  details[open] .ref-collapsible__hint {
+    transform: rotate(180deg);
+  }
+  .ref-collapsible__body {
+    padding: var(--space-3) 0 var(--space-5);
+  }
+  .ref-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+  .ref-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg-elev);
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: border-color var(--duration-short) var(--ease-standard);
+  }
+  .ref-card:hover {
+    border-color: var(--color-accent);
+  }
+  .ref-card__zh {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--type-md);
+  }
+  .ref-card__en {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--color-sub);
+  }
+  .ref-card__desc {
+    font-size: var(--type-sm);
+    color: var(--color-ink-soft);
+    line-height: 1.4;
+    margin: var(--space-1) 0 0;
+  }
+
+  /* ══════ Responsive ══════ */
+  @media (max-width: 820px) {
+    .strokes-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .longterm-grid {
+      grid-template-columns: 1fr;
+    }
+    .ref-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .strokes-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero {
+      padding: var(--space-4) 0 var(--space-5);
+    }
+    .sec__head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-1);
+    }
+  }
+</style>

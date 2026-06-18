@@ -1,0 +1,191 @@
+---
+/**
+ * Base.astro — 全站 layout
+ * 提供 skip link / header / main / footer 結構 + 全域設計語言
+ */
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+  showFooter?: boolean;
+}
+
+const {
+  title,
+  description = '水感知識庫 — minimax-vortex。從水感發展脊椎到六式技術細節，從動作視覺到心理地基。',
+  showFooter = true,
+} = Astro.props;
+
+const siteName = 'minimax-vortex';
+const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
+---
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{fullTitle}</title>
+
+    <!-- Font preconnect — 改善 LCP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@500;600&display=swap"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <!-- Skip link — 鍵盤用戶跳至主內容（WCAG 2.4.1） -->
+    <a href="#main" class="skip-link">跳至主內容</a>
+
+    <!-- Header -->
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href={`${import.meta.env.BASE_URL}`} class="site-header__brand">
+          <span class="brand-stamp">水感知識庫</span>
+          <span class="brand-name">minimax-vortex</span>
+        </a>
+        <nav class="site-nav" aria-label="主導航">
+          <a href={`${import.meta.env.BASE_URL}theory/`}>先懂</a>
+          <a href={`${import.meta.env.BASE_URL}practice/`}>開始練</a>
+          <a href={`${import.meta.env.BASE_URL}long-term/`}>長期</a>
+          <a href={`${import.meta.env.BASE_URL}reference/`}>查資料</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+
+    {showFooter && (
+      <footer class="site-footer">
+        <div class="site-footer__inner">
+          <p class="site-footer__line">
+            <span class="eyebrow">Cortex · Vortex</span>
+            <span class="muted">v1 · 2026 · <a href={`${import.meta.env.BASE_URL}research/`}>研究與設計</a></span>
+          </p>
+          <p class="site-footer__line muted">
+            公開層不放感知判讀診斷語；內容以教練觀測為主、L0–L6 發展序列為座標。
+          </p>
+          <p class="site-footer__line cert">
+            <span class="cert-cert-derived">🔵</span> 推導 ·
+            <span class="cert-cert-recent">🟢</span> 近期文獻 ·
+            <span class="cert-cert-old">🟡</span> 舊文獻 ·
+            <span class="cert-cert-coach">🟠</span> 教練觀測 ·
+            <span class="cert-cert-todo">🔴</span> 待查
+          </p>
+        </div>
+      </footer>
+    )}
+
+    <style>
+      .site-header {
+        border-bottom: 2px solid var(--color-rule-strong);
+        margin-bottom: var(--space-5);
+      }
+      .site-header__inner {
+        max-width: var(--container-wide);
+        margin: 0 auto;
+        padding: var(--space-3) var(--space-4);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+      }
+      .site-header__brand {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        text-decoration: none;
+        color: var(--color-ink);
+      }
+      .brand-stamp {
+        font-family: var(--font-mono);
+        font-size: var(--type-tiny);
+        letter-spacing: var(--tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color-sub);
+      }
+      .brand-name {
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-size: var(--type-md);
+        color: var(--color-ink);
+      }
+      .site-nav {
+        display: flex;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+      }
+      .site-nav a {
+        font-family: var(--font-mono);
+        font-size: var(--type-sm);
+        font-weight: 600;
+        letter-spacing: var(--tracking-mono);
+        color: var(--color-ink);
+        text-decoration: none;
+        padding: var(--space-1) var(--space-2);
+        border-bottom: 1px solid transparent;
+        transition: border-color var(--duration-short) var(--ease-standard);
+      }
+      .site-nav a:hover {
+        color: var(--color-accent);
+        border-bottom-color: var(--color-accent);
+      }
+
+      .site-main {
+        max-width: var(--container-wide);
+        margin: 0 auto;
+        padding: 0 var(--space-4) var(--space-7);
+      }
+
+      .site-footer {
+        border-top: 2px solid var(--color-rule-strong);
+        margin-top: var(--space-7);
+        padding: var(--space-4) 0;
+      }
+      .site-footer__inner {
+        max-width: var(--container-wide);
+        margin: 0 auto;
+        padding: 0 var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      .site-footer__line {
+        margin: 0;
+        font-size: var(--type-sm);
+        display: flex;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+        align-items: baseline;
+      }
+
+      @media (max-width: 600px) {
+        .site-header__inner {
+          padding: var(--space-2);
+          gap: var(--space-2);
+        }
+        .site-nav {
+          gap: var(--space-2);
+          width: 100%;
+          justify-content: space-between;
+        }
+        .site-main {
+          padding: 0 var(--space-2) var(--space-5);
+        }
+        .site-footer__inner {
+          padding: 0 var(--space-2);
+        }
+      }
+    </style>
+  </body>
+</html>

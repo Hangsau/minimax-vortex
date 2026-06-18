@@ -1,0 +1,29 @@
+{
+  "name": "minimax-vortex",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "水感知識庫 — minimax-vortex 獨立站（基於 5 份設計研究 + 41 項 checklist）",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "a11y": "axe https://hangsau.github.io/minimax-vortex/ --exit"
+  },
+  "dependencies": {
+    "astro": "^5.1.0",
+    "@astrojs/sitemap": "^3.2.0",
+    "@astrojs/rss": "^4.0.0",
+    "@astrojs/mdx": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.10.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
