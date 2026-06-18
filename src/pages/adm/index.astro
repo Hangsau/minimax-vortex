@@ -1,0 +1,345 @@
+---
+/**
+ * adm/index.astro — 運動員發展矩陣 ADM 入口
+ *
+ * 設計依據：
+ * - masthead（背景脈絡）+ 三入口（背景 / 矩陣 / 標準）
+ * - 對應 content/adm/background.md + matrix.md + standards.md
+ * - 4 支柱 × 4 階段 + 22 項技術標準的入口
+ */
+import Base from '../../layouts/Base.astro';
+import MiniLadder from '../../components/MiniLadder.astro';
+
+const pillars = [
+  {
+    key: 'physical',
+    zh: '體能',
+    en: 'Physical Capacities',
+    desc: '4S：Stamina / Strength / Speed / Suppleness。在最能回應訓練刺激的時機，依發展階段進行適當訓練。',
+  },
+  {
+    key: 'technical',
+    zh: '技術戰術策略',
+    en: 'Technical / Tactical / Strategic',
+    desc: '從基本人體動作 → 基礎動作技能 → 運動基礎技能 → 運動專項技能 → 戰術 → 策略的完整序列。',
+  },
+  {
+    key: 'mental',
+    zh: '心理技能',
+    en: 'Mental / Psychological',
+    desc: '六大核心：正向態度、動機、目標設定、情緒識別與控制、專注力控制、減少錯誤。',
+  },
+  {
+    key: 'life',
+    zh: '生活技能',
+    en: 'Life Skills',
+    desc: 'SEL 五大核心：自我覺察、自我管理、社會覺察、人際關係技能、負責任的決策。',
+  },
+];
+
+const stages = [
+  { key: 'l2t', zh: 'Learn to Train', l: 'L0–L2', desc: '學習訓練：基本動作技能 → 運動基礎技能' },
+  { key: 't2t', zh: 'Train to Train', l: 'L2–L4', desc: '訓練為訓練：Podium ID 起點' },
+  { key: 't2c', zh: 'Train to Compete', l: 'L4–L5', desc: '訓練為競賽：Podium Potential' },
+  { key: 't2w', zh: 'Train to Win', l: 'L5–L6', desc: '訓練為勝利：Podium Success' },
+];
+---
+
+<Base
+  title="運動員發展矩陣 ADM"
+  description="4 支柱 × 4 階段（L2T → T2W）的長期能力對照 + 22 項技術標準 + 背景脈絡。"
+>
+
+  <!-- ═══ Masthead ═══ -->
+  <section class="masthead">
+    <p class="eyebrow">Athlete Development Matrix</p>
+    <h1 class="masthead__title">運動員發展矩陣</h1>
+    <p class="masthead__lead">
+      ADM 不是訓練計畫的詳細處方，也不是教練的操作手冊——而是<strong>每位運動員在不同發展階段，
+      我們希望他展現的觀察、行動與表達方式</strong>的廣義路線圖。
+    </p>
+    <p class="masthead__origin">
+      源自 <em>Swimming Canada ADM</em> 與 <em>長期運動發展模型（LTD）</em>。
+      內容以教練觀測為主軸，配合 22 項技術標準與四式專屬發展框架。
+    </p>
+    <MiniLadder levels={['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']} label="涵蓋全 L0–L6" />
+  </section>
+
+  <!-- ═══ 三入口 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">壹</span>三個入口</h2>
+      <span class="eyebrow sec__tag">3 Entry Points</span>
+    </header>
+    <p class="sec__lead">依你想了解的深度，挑一個：脈絡（為什麼這樣設計）→ 矩陣（怎麼對應）→ 標準（具體的技術點）。</p>
+    <div class="entry-grid">
+      <a href="/adm/background/" class="entry-card">
+        <span class="entry-card__no">一</span>
+        <h3 class="entry-card__zh">背景與發展架構</h3>
+        <p class="entry-card__en">Background &amp; Framework</p>
+        <p class="entry-card__desc">
+          為什麼是「4 支柱 × 4 階段」？獎牌台路徑、高水準表現定義、八大審閱考量。
+        </p>
+      </a>
+      <a href="/adm/matrix/" class="entry-card">
+        <span class="entry-card__no">二</span>
+        <h3 class="entry-card__zh">發展矩陣</h3>
+        <p class="entry-card__en">Development Matrix</p>
+        <p class="entry-card__desc">
+          4 支柱 × 4 階段（L2T → T2W）的 master-detail 對照——每格點開看具體觀察與支持。
+        </p>
+      </a>
+      <a href="/adm/standards/" class="entry-card">
+        <span class="entry-card__no">三</span>
+        <h3 class="entry-card__zh">技術標準</h3>
+        <p class="entry-card__en">Technical Standards</p>
+        <p class="entry-card__desc">
+          22 項技術標準卡片，含物理本質、機制、實務啟示；可按泳式 filter。
+        </p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══ 4 支柱預覽 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">貳</span>4 大支柱</h2>
+      <span class="eyebrow sec__tag">4 Pillars</span>
+    </header>
+    <p class="sec__lead">支柱之間的關係：生活技能奠定基礎 → 心理技能強化 → 技術戰術執行 → 體能支撐。</p>
+    <div class="pillar-grid">
+      {pillars.map((p) => (
+        <article class="pillar-card">
+          <h3 class="pillar-card__zh">{p.zh}</h3>
+          <p class="pillar-card__en">{p.en}</p>
+          <p class="pillar-card__desc">{p.desc}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══ 4 階段預覽 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">參</span>4 個發展階段</h2>
+      <span class="eyebrow sec__tag">4 Stages · L2T → T2W</span>
+    </header>
+    <p class="sec__lead">獎牌台路徑從 Train to Train 開始——前三段（Active Start / FUNdamentals / Learn to Train）是地基。</p>
+    <ol class="stage-list">
+      {stages.map((s, i) => (
+        <li class="stage">
+          <span class="stage__no">{(i + 1).toString().padStart(2, '0')}</span>
+          <div class="stage__body">
+            <h3 class="stage__zh">{s.zh}</h3>
+            <p class="stage__l">{s.l}</p>
+            <p class="stage__desc">{s.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <style>
+    /* ═══ Masthead ═══ */
+    .masthead {
+      padding: var(--space-7) 0 var(--space-6);
+      border-bottom: 2px solid var(--color-rule-strong);
+    }
+    .masthead__title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(var(--type-2xl), 6vw, var(--type-4xl));
+      line-height: 1.05;
+      letter-spacing: var(--tracking-tight);
+      margin: var(--space-2) 0 var(--space-3);
+    }
+    .masthead__lead {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-3);
+    }
+    .masthead__origin {
+      font-size: var(--type-sm);
+      color: var(--color-sub);
+      line-height: 1.6;
+      max-width: var(--measure-narrow);
+      margin: 0 0 var(--space-4);
+    }
+    .masthead__origin em {
+      font-style: normal;
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+    .masthead :global(.mini-ladder) { margin-top: var(--space-3); }
+
+    /* ═══ Section ═══ */
+    .sec {
+      margin-top: var(--space-7);
+      padding-top: var(--space-4);
+      border-top: 2px solid var(--color-rule-strong);
+    }
+    .sec__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .sec__title {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: clamp(var(--type-xl), 4vw, var(--type-2xl));
+      margin: 0;
+    }
+    .sec__no {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      color: var(--color-accent);
+      margin-right: 0.4em;
+    }
+    .sec__tag { color: var(--color-sub); }
+    .sec__lead {
+      font-size: var(--type-sm);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+
+    /* ═══ Entry cards ═══ */
+    .entry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+    }
+    .entry-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-4);
+      border: 1px solid var(--color-rule-strong);
+      background: var(--color-bg-elev);
+      text-decoration: none;
+      color: var(--color-ink);
+      transition: border-color var(--duration-short) var(--ease-standard),
+                  transform var(--duration-short) var(--ease-standard);
+      min-height: 200px;
+    }
+    .entry-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+    }
+    .entry-card__no {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+    .entry-card__zh {
+      font-family: var(--font-serif);
+      font-size: var(--type-lg);
+      font-weight: 600;
+      margin: 0;
+    }
+    .entry-card__en {
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      letter-spacing: var(--tracking-mono);
+      color: var(--color-sub);
+      margin: 0;
+    }
+    .entry-card__desc {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      margin: var(--space-2) 0 0;
+    }
+
+    /* ═══ Pillar grid ═══ */
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+    }
+    .pillar-card {
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+      border-left: 3px solid var(--color-accent);
+    }
+    .pillar-card__zh {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0 0 2px;
+    }
+    .pillar-card__en {
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      color: var(--color-sub);
+      letter-spacing: var(--tracking-mono);
+      margin: 0 0 var(--space-2);
+    }
+    .pillar-card__desc {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ═══ Stage list ═══ */
+    .stage-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      counter-reset: stage;
+    }
+    .stage {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+    }
+    .stage__no {
+      font-family: var(--font-mono);
+      font-size: var(--type-2xl);
+      font-weight: 700;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+    .stage__zh {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0 0 2px;
+    }
+    .stage__l {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      color: var(--color-sub);
+      letter-spacing: var(--tracking-mono);
+      margin: 0 0 4px;
+    }
+    .stage__desc {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    @media (max-width: 820px) {
+      .entry-grid { grid-template-columns: 1fr; }
+      .pillar-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</Base>

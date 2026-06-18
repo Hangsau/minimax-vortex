@@ -1,0 +1,608 @@
+---
+/**
+ * psychology/index.astro — 心理層（5 處境卡 + 三帶切分）
+ *
+ * 設計依據（per entry-wayfinding）：
+ * - Hero + MiniLadder（L0–L6 涵蓋）
+ * - 5 張處境卡（場景式，不按主題名）
+ * - 三帶切分：初學端（L0-L2）+ 貫穿全程（L0-L6）+ 進階競技端（L3-L6）
+ * - 每帶下列出對應主題 + 概念連結
+ *
+ * 處境卡來自 psychology.yaml 的 themes（when_zh + l_band + name_zh + concept_count）
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import yaml from 'js-yaml';
+import Base from '../../layouts/Base.astro';
+import MiniLadder from '../../components/MiniLadder.astro';
+
+const dataPath = (p: string) => resolve(process.cwd(), 'src/data', p);
+const raw = yaml.load(readFileSync(dataPath('psychology.yaml'), 'utf8')) as any;
+const themes: any[] = raw.themes ?? [];
+
+// 對應「5 處境卡」：取每個 band 的代表主題
+const situationMap: Record<string, { label: string; icon: string }> = {
+  'psych.fear': { label: '怕水', icon: '◐' },
+  'psych.interaction': { label: '身心僵硬', icon: '○' },
+  'psych.motivation': { label: '提不起勁', icon: '◑' },
+  'psych.attention': { label: '上場分心', icon: '◒' },
+  'psych.arousal': { label: '壓力崩潰', icon: '◓' },
+  'psych.flow': { label: '心流', icon: '●' },
+  'psych.imagery': { label: '心理演練', icon: '◔' },
+  'psych.self_talk': { label: '自我對話', icon: '◕' },
+};
+
+// 處境卡用 5 個場景式問題
+const situations = [
+  {
+    key: 'fear',
+    label: '怕水',
+    icon: '◐',
+    when: '還不敢放手、一下水就僵、怕到不敢開始時',
+    band: '初學端',
+    l: ['L0', 'L1', 'L2'],
+    themes: ['psych.fear'],
+    intro: '水中恐懼的核心常不是「怕水本身」，而是「怕在水裡失去對身體的控制」—— 恐懼一旦啟動，會從源頭關閉學習所需的感知頻寬。',
+  },
+  {
+    key: 'body-mind',
+    label: '身心僵硬',
+    icon: '○',
+    when: '一用力就全身緊、怎麼放鬆都放不開、呼吸淺又快時',
+    band: '初學端',
+    l: ['L0', 'L1', 'L2'],
+    themes: ['psych.interaction'],
+    intro: '心理張力會直接變成肌肉張力。焦慮、緊張、恐懼啟動的瞬間，身體已經先緊了——腦還沒決定，身體已經動不了。',
+  },
+  {
+    key: 'motivation',
+    label: '提不起勁',
+    icon: '◑',
+    when: '練了一陣子沒進步、找不到為什麼要練、開始想逃時',
+    band: '貫穿全程',
+    l: ['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'],
+    themes: ['psych.motivation'],
+    intro: '動機不是「有志者事竟成」的口號，是「什麼環境/任務/回饋讓你願意繼續投入」的可觀察條件——把動機當成環境設計問題，不是意志力問題。',
+  },
+  {
+    key: 'attention',
+    label: '上場分心',
+    icon: '◒',
+    when: '練習 OK 比赛失常、腦袋太多聲音、被觀眾/對手/計時板拉走時',
+    band: '進階競技端',
+    l: ['L3', 'L4', 'L5', 'L6'],
+    themes: ['psych.attention', 'psych.self_talk'],
+    intro: '專注力是寬度有限的頻寬——內部自我對話、外部環境、身體疲勞訊號都在搶同一條通道。學會「把頻寬給誰」是高階選手的關鍵差異。',
+  },
+  {
+    key: 'arousal',
+    label: '壓力崩潰',
+    icon: '◓',
+    when: '明明會的動作到關鍵時刻做不到、越想越僵、肌肉忘了怎麼動時',
+    band: '進階競技端',
+    l: ['L3', 'L4', 'L5', 'L6'],
+    themes: ['psych.arousal', 'psych.flow'],
+    intro: '壓力下崩潰不是技術消失，是「刻意監控」反噬自動化——一旦技術需要意識介入才能執行，壓力越大越崩。去再投資（de-reinvestment）是高階選手必修。',
+  },
+];
+
+// 三帶分組
+const bands = {
+  beginner: {
+    label: '初學端',
+    l: 'L0–L2',
+    desc: '怕水與身心交互在 L0–L2 是閘門——感知頻寬被恐懼/緊張關閉，技術教不進去。',
+  },
+  across: {
+    label: '貫穿全程',
+    l: 'L0–L6',
+    desc: '動機與意象是 L0 到 L6 都在運作的心理地基——不是某一階段才需要。',
+  },
+  advanced: {
+    label: '進階競技端',
+    l: 'L3–L6',
+    desc: '注意力、自我對話、喚醒、心流在高階階段浮上水面——壓力下的自動化崩潰是主要議題。',
+  },
+};
+
+// 從 themes 取每帶對應的主題清單（給三帶章節用）
+function themesForBand(bandKey: 'beginner' | 'across' | 'advanced') {
+  const bandLabel = bands[bandKey].label;
+  return themes.filter((t) => t.band === bandLabel);
+}
+
+const themesById: Record<string, any> = {};
+themes.forEach((t) => { themesById[t.id] = t; });
+---
+
+<Base
+  title="心理層"
+  description="5 張處境卡 + 三帶切分：怕水、身心僵硬、提不起勁、上場分心、壓力崩潰——按場景找，不按主題名。"
+>
+  <!-- ═══ Hero ═══ -->
+  <section class="hero">
+    <p class="eyebrow">Psychology · 5 Situations</p>
+    <h1 class="hero__title">心理層</h1>
+    <p class="hero__lead">
+      心理不是「心靈雞湯」，是「為什麼學生在某些時刻的某些動作做不到」的可解釋結構。
+      這裡按<strong>處境</strong>找（場景式），不按主題名。
+    </p>
+    <MiniLadder levels={['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']} label="全 L0–L6 都涉及" />
+  </section>
+
+  <!-- ═══ 5 處境卡 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">壹</span>5 張處境卡</h2>
+      <span class="eyebrow sec__tag">Pick by Situation</span>
+    </header>
+    <p class="sec__lead">
+      場景式的入口——挑最接近你現在（或你帶的人）處境的那一張。對應的主題會在下方三帶中展開。
+    </p>
+    <div class="sit-grid">
+      {situations.map((s) => (
+        <a href={`#sit-${s.key}`} class="sit-card sit-card--{s.band === '初學端' ? 'beginner' : s.band === '貫穿全程' ? 'across' : 'advanced'}">
+          <span class="sit-card__icon" aria-hidden="true">{s.icon}</span>
+          <h3 class="sit-card__label">{s.label}</h3>
+          <p class="sit-card__when">{s.when}</p>
+          <div class="sit-card__band">
+            <span class="band-tag">{s.band}</span>
+            <span class="band-l">{s.l.join(' / ')}</span>
+          </div>
+          <p class="sit-card__intro">{s.intro}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══ 三帶切分 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">貳</span>三帶切分</h2>
+      <span class="eyebrow sec__tag">3 Bands by L Range</span>
+    </header>
+    <p class="sec__lead">
+      心理議題不是某一層級才出現，是「在每個 L 範圍的主導議題」不同。初學端是閘門，貫穿全程是地基，進階端是頻寬管理。
+    </p>
+  </section>
+
+  <!-- ═══ 帶 1：初學端 ═══ -->
+  <section class="band band--beginner" id="band-beginner">
+    <header class="band__head">
+      <p class="eyebrow band__no">Band 1</p>
+      <h2 class="band__title">初學端</h2>
+      <p class="band__l">L0 – L2</p>
+    </header>
+    <p class="band__lead">{bands.beginner.desc}</p>
+    <div class="band__themes">
+      {themesForBand('beginner').map((t) => (
+        <details class="theme" id={`sit-${t.id.split('.')[1] ?? t.id}`}>
+          <summary class="theme__sum">
+            <span class="theme__nav">{t.nav_zh}</span>
+            <span class="theme__name">{t.name_zh}</span>
+            <span class="theme__count">{t.concept_count} 個概念</span>
+          </summary>
+          <div class="theme__body">
+            <p class="theme__when"><strong>場景：</strong>{t.when_zh}</p>
+            <p class="theme__premise" set:html={t.premise?.one_line ?? ''}></p>
+            <ul class="theme__concepts">
+              {(t.concepts ?? []).map((c: any) => (
+                <li class="concept">
+                  <span class="concept__order">{c.order}</span>
+                  <div class="concept__body">
+                    <h4 class="concept__name">
+                      {c.name_zh}
+                      <span class="cert">{c.phenomenon?.certainty ?? ''}</span>
+                    </h4>
+                    <p class="concept__txt">{c.phenomenon?.text ?? ''}</p>
+                    {c.misconception_refs?.[0] && (
+                      <div class="concept__miscon">
+                        <p class="miscon__bad">✗ 「{c.misconception_refs[0].cue}」</p>
+                        <p class="miscon__why">↳ {c.misconception_refs[0].why}</p>
+                        {c.misconception_refs[0].better && (
+                          <p class="miscon__good">✓ 「{c.misconception_refs[0].better}」</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══ 帶 2：貫穿全程 ═══ -->
+  <section class="band band--across" id="band-across">
+    <header class="band__head">
+      <p class="eyebrow band__no">Band 2</p>
+      <h2 class="band__title">貫穿全程</h2>
+      <p class="band__l">L0 – L6</p>
+    </header>
+    <p class="band__lead">{bands.across.desc}</p>
+    <div class="band__themes">
+      {themesForBand('across').map((t) => (
+        <details class="theme">
+          <summary class="theme__sum">
+            <span class="theme__nav">{t.nav_zh}</span>
+            <span class="theme__name">{t.name_zh}</span>
+            <span class="theme__count">{t.concept_count} 個概念</span>
+          </summary>
+          <div class="theme__body">
+            <p class="theme__when"><strong>場景：</strong>{t.when_zh}</p>
+            <p class="theme__premise" set:html={t.premise?.one_line ?? ''}></p>
+            <ul class="theme__concepts">
+              {(t.concepts ?? []).map((c: any) => (
+                <li class="concept">
+                  <span class="concept__order">{c.order}</span>
+                  <div class="concept__body">
+                    <h4 class="concept__name">
+                      {c.name_zh}
+                      <span class="cert">{c.phenomenon?.certainty ?? ''}</span>
+                    </h4>
+                    <p class="concept__txt">{c.phenomenon?.text ?? ''}</p>
+                    {c.misconception_refs?.[0] && (
+                      <div class="concept__miscon">
+                        <p class="miscon__bad">✗ 「{c.misconception_refs[0].cue}」</p>
+                        <p class="miscon__why">↳ {c.misconception_refs[0].why}</p>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══ 帶 3：進階競技端 ═══ -->
+  <section class="band band--advanced" id="band-advanced">
+    <header class="band__head">
+      <p class="eyebrow band__no">Band 3</p>
+      <h2 class="band__title">進階競技端</h2>
+      <p class="band__l">L3 – L6</p>
+    </header>
+    <p class="band__lead">{bands.advanced.desc}</p>
+    <div class="band__themes">
+      {themesForBand('advanced').map((t) => (
+        <details class="theme">
+          <summary class="theme__sum">
+            <span class="theme__nav">{t.nav_zh}</span>
+            <span class="theme__name">{t.name_zh}</span>
+            <span class="theme__count">{t.concept_count} 個概念</span>
+          </summary>
+          <div class="theme__body">
+            <p class="theme__when"><strong>場景：</strong>{t.when_zh}</p>
+            <p class="theme__premise" set:html={t.premise?.one_line ?? ''}></p>
+            <ul class="theme__concepts">
+              {(t.concepts ?? []).map((c: any) => (
+                <li class="concept">
+                  <span class="concept__order">{c.order}</span>
+                  <div class="concept__body">
+                    <h4 class="concept__name">
+                      {c.name_zh}
+                      <span class="cert">{c.phenomenon?.certainty ?? ''}</span>
+                    </h4>
+                    <p class="concept__txt">{c.phenomenon?.text ?? ''}</p>
+                    {c.misconception_refs?.[0] && (
+                      <div class="concept__miscon">
+                        <p class="miscon__bad">✗ 「{c.misconception_refs[0].cue}」</p>
+                        <p class="miscon__why">↳ {c.misconception_refs[0].why}</p>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <style>
+    /* ═══ Hero ═══ */
+    .hero {
+      padding: var(--space-6) 0 var(--space-5);
+      border-bottom: 2px solid var(--color-rule-strong);
+    }
+    .hero__title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(var(--type-2xl), 5vw, var(--type-3xl));
+      line-height: 1.1;
+      margin: var(--space-2) 0 var(--space-3);
+    }
+    .hero__lead {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+    .hero :global(.mini-ladder) {
+      margin-top: var(--space-3);
+    }
+
+    /* ═══ Section ═══ */
+    .sec {
+      margin-top: var(--space-7);
+      padding-top: var(--space-4);
+      border-top: 2px solid var(--color-rule-strong);
+    }
+    .sec__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .sec__title {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: clamp(var(--type-xl), 4vw, var(--type-2xl));
+      margin: 0;
+    }
+    .sec__no {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      color: var(--color-accent);
+      margin-right: 0.4em;
+    }
+    .sec__tag { color: var(--color-sub); }
+    .sec__lead {
+      font-size: var(--type-sm);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+
+    /* ═══ Situation cards ═══ */
+    .sit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-3);
+    }
+    .sit-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+      text-decoration: none;
+      color: var(--color-ink);
+      transition: border-color var(--duration-short) var(--ease-standard),
+                  transform var(--duration-short) var(--ease-standard);
+      min-height: 220px;
+    }
+    .sit-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-1px);
+    }
+    .sit-card__icon {
+      font-family: var(--font-mono);
+      font-size: var(--type-2xl);
+      color: var(--color-accent);
+      line-height: 1;
+    }
+    .sit-card__label {
+      font-family: var(--font-serif);
+      font-size: var(--type-xl);
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .sit-card__when {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.5;
+      margin: 0;
+    }
+    .sit-card__band {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      margin-top: auto;
+    }
+    .band-tag {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid var(--color-border);
+    }
+    .band-l {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      color: var(--color-sub);
+      letter-spacing: var(--tracking-mono);
+    }
+    .sit-card__intro {
+      font-size: var(--type-xs);
+      color: var(--color-sub);
+      line-height: 1.5;
+      margin: 0;
+      border-top: 1px dashed var(--color-rule);
+      padding-top: var(--space-2);
+    }
+
+    /* 帶色彩提示（左邊框） */
+    .sit-card--beginner { border-left: 3px solid var(--color-cert-old); }
+    .sit-card--across { border-left: 3px solid var(--color-cert-derived); }
+    .sit-card--advanced { border-left: 3px solid var(--color-cert-coach); }
+
+    /* ═══ Band ═══ */
+    .band {
+      margin-top: var(--space-6);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-rule);
+    }
+    .band__head {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .band__no {
+      margin: 0;
+    }
+    .band__title {
+      font-family: var(--font-serif);
+      font-size: clamp(var(--type-lg), 3.5vw, var(--type-xl));
+      font-weight: 600;
+      margin: 0;
+    }
+    .band__l {
+      font-family: var(--font-mono);
+      font-size: var(--type-sm);
+      letter-spacing: var(--tracking-mono);
+      color: var(--color-accent);
+      margin: 0;
+    }
+    .band__lead {
+      font-size: var(--type-sm);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-3);
+    }
+    .band__themes {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    /* ═══ Theme (details) ═══ */
+    .theme {
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+    }
+    .theme__sum {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .theme__sum::-webkit-details-marker { display: none; }
+    .theme__sum:hover { background: var(--color-bg-soft); }
+    .theme__nav {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      color: var(--color-accent);
+      flex: 0 0 auto;
+    }
+    .theme__name {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      flex: 1 1 auto;
+    }
+    .theme__count {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      color: var(--color-sub);
+      letter-spacing: var(--tracking-mono);
+    }
+    .theme[open] .theme__sum {
+      border-bottom: 1px solid var(--color-rule);
+    }
+    .theme__body {
+      padding: var(--space-3);
+    }
+    .theme__when {
+      font-size: var(--type-sm);
+      color: var(--color-ink);
+      margin: 0 0 var(--space-2);
+    }
+    .theme__premise {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      border-left: 2px solid var(--color-accent);
+      padding-left: var(--space-2);
+      margin: 0 0 var(--space-3);
+    }
+    .theme__concepts {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .concept {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+      border-top: 1px dashed var(--color-rule);
+    }
+    .concept:first-child { border-top: none; }
+    .concept__order {
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      color: var(--color-sub);
+      flex: 0 0 32px;
+      padding-top: 2px;
+    }
+    .concept__body { flex: 1; }
+    .concept__name {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0 0 var(--space-1);
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .cert {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-mono);
+    }
+    .concept__txt {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.7;
+      margin: 0;
+    }
+    .concept__miscon {
+      margin-top: var(--space-2);
+      padding: var(--space-2);
+      background: var(--color-bg-soft);
+      border-left: 2px solid var(--color-bad);
+      font-size: var(--type-xs);
+      line-height: 1.6;
+    }
+    .miscon__bad, .miscon__good, .miscon__why {
+      margin: 0 0 2px;
+    }
+    .miscon__bad { color: var(--color-bad); }
+    .miscon__good { color: var(--color-good); }
+    .miscon__why { color: var(--color-ink-soft); }
+
+    @media (max-width: 600px) {
+      .sit-grid {
+        grid-template-columns: 1fr;
+      }
+      .theme__sum {
+        padding: var(--space-2);
+      }
+    }
+  </style>
+</Base>

@@ -1,0 +1,76 @@
+---
+/**
+ * underwater-dolphin-kick.astro — 水下蝶腳內頁
+ *
+ * 資料源：src/data/udk.yaml（7 個 moves）
+ * Frontmatter：src/content/underwater-dolphin-kick/_index.md
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import StrokePage from '../../components/StrokePage.astro';
+import type { Move } from '../../components/StrokePage.astro';
+
+const yamlPath = path.join(process.cwd(), 'src/data/udk.yaml');
+const data = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as {
+  premise: string;
+  moves: Move[];
+};
+
+const moves: Move[] = data.moves.map((m: any) => ({
+  n: m.n,
+  name: m.name,
+  one: m.one,
+  l: m.l,
+  physical: m.physical,
+  boundary: m.boundary,
+  drills: Array.isArray(m.drills) ? m.drills : [],
+  cue_bad: m.cue_bad,
+  cue_why: m.cue_why,
+  cue_good: m.cue_good,
+  lnote: m.lnote,
+}));
+
+const overview = `
+<p>水下蝶腳的推進是<mark>全身波動傳到腳尖</mark>，不是腿在踢；上踢與下踢都是推進相，流線型品質決定速度上限。</p>
+<p>能量鏈：<mark>核心 → 髖 → 膝 → 踝 → 腳尖</mark>。髖屈伸是主驅動節點，膝被動傳遞放大（不主動發力），踝/腳尖是鞭打終點加速器。從膝蓋發力跳過髖部起始驅動，踝關節鞭打失去近端支撐；下踢前的膝蓋彎曲量是 UDK 最主要減速來源。</p>
+<p>流線型是 UDK 速度的<mark>底板</mark>：雙臂夾耳手疊合、全身收緊、頭部中立靜止，振幅控制在身體輪廓線內。任何流線型破壞（抬頭、手臂鬆散、腰過度彎）在高速入水後被阻力放大。</p>
+<p>本頁 7 個動作從「流線型就位」（前置）開始，到「出水銜接（Breakout）」（L4）結束。涵蓋 UDK 特有的渦流整合與俯臥/仰臥差異。</p>
+`;
+
+const deeper = [
+  {
+    heading: '上下踢都是推進相：對稱性的力量',
+    body: `
+<p>上踢<mark>不是回復動作，是另一個推進相</mark>。下踢/上踢腳尖速度比值與水平游速<mark>顯著負相關</mark>（Atkison et al. 2014）——相對上踢越強游速越快。</p>
+<p>把上踢當回復建立不對稱的踢腿地圖——這是 UDK 速度差距最大的訓練機會。上踢由<mark>髖伸展（臀肌/大腿後側）</mark>主導，縮短上踢時間、減少最低點高阻力停留、回收下踢渦流。</p>
+<p>「只有下踢有推進力，上踢沒用」是最常見的誤導。對稱性是 UDK 的核心結構——上踢與下踢都各自高效，才能穩定維持水下速度。</p>
+`,
+  },
+  {
+    heading: '切換速度：渦流回收的窗口',
+    body: `
+<p>下踢到上踢的<mark>切換速度決定渦流回收效率</mark>（Tsukuba 2024）：快速切換能「接住」下踢製造的渦流獲得額外推進；切換越慢渦流能量消散。腿在最低點（振幅最大、阻力最高）停留越久成本越高。切換窗口約 1/10 秒。</p>
+<p>強迫高踢頻時振幅自動縮小、游速不增（Gonjo 2017：Froude 效率反而下降，代謝負擔上升）；<mark>最優踢頻是個體特異的</mark>，是技術進步的結果，不是訓練手段。</p>
+<p>「強迫提高踢頻才能加速」（節拍器強制提速）會使振幅縮小，推進損失抵消頻率收益，速度不變更耗力。對應 cue 是「提高每踢效率，頻率自然提升」。</p>
+`,
+  },
+  {
+    heading: '俯臥 vs 仰臥：物理不同',
+    body: `
+<p>同 UDK 技術，俯臥與仰臥的物理不同：俯臥下踢與浮力同向（易過早浮出），每踢峰值高但谷值明顯；<mark>仰臥下踢對抗浮力</mark>，維持深度更穩定、速度曲線更平滑、整體效率更高。</p>
+<p>仰式下踢方向、浮力關係、效率機制都不同；套用俯式「向下爆發」口令使仰式速度不穩定。仰式強調對抗浮力的下踢與速度穩定——<mark>仰式追求穩定，不追求每踢很爆</mark>。</p>
+<p>仰式深度維持依賴主動對抗浮力；<mark>核心力量</mark>不足者腰部被浮力推高呈弓形、阻力增大——核心力量問題，不是感知問題。陸上核心訓練優先。</p>
+`,
+  },
+];
+---
+<StrokePage
+  title="水下蝶腳"
+  titleEn="Underwater Dolphin Kick"
+  premise={data.premise}
+  levels={['L2', 'L3', 'L4']}
+  overview={overview}
+  moves={moves}
+  deeper={deeper}
+/>

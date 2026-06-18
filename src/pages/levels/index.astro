@@ -1,0 +1,499 @@
+---
+/**
+ * levels/index.astro — 水感發展 L0–L6
+ *
+ * 設計依據（per DESIGN_SYSTEM §7.3 + entry-wayfinding H4）：
+ * - MiniLadder 完整 7 級打亮
+ * - 每級一個章節：訓練方法 / 觀察指標 / 量化基準 / 跨四式共通點
+ * - 用 <details> 摺合每級細節（Cognitive Gate — 高 L 預設收合）
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import yaml from 'js-yaml';
+import Base from '../../layouts/Base.astro';
+import MiniLadder from '../../components/MiniLadder.astro';
+
+const dataPath = (p: string) => resolve(process.cwd(), 'src/data', p);
+const raw = yaml.load(readFileSync(dataPath('water-sense-levels.yaml'), 'utf8')) as any;
+const levels: any[] = raw.levels ?? [];
+
+// 跨四式共通點（從 indicators + 框架設計邏輯彙整）
+// 為了不重複堆 22+ 條 indicators，這裡用框架描述
+const commonPoints = {
+  pre: '感覺阻力存在，但未與動作連結；漂行距離是首要可量測訊號。',
+  L0: '啟動感受器——呼吸、漂浮、平衡三件基礎事的「可預期規律」建立起來，安全感是輸出。',
+  L1: '感知萌芽——主動感覺水對身體做了什麼，前庭感知的重新校準開始。',
+  L2: '推進感萌芽——動作開始讓身體前進（浮板踢 15m 不停頓是主要基準）。',
+  L3: '水感出現但不穩定——偶爾抓到，下一趟又消失。SWOLF 穩定比數值更重要。',
+  L4: '壓力下感知維持不住——技術開始崩潰，疲勞後飄移是主要診斷。',
+  L5: '感知自動化過渡——高速下開始穩定，連鎖感知接點是主要評估。',
+  L6: '感知自動化完成——不需要刻意思考，技術變成背景程序。',
+};
+
+// Cognitive Gate：L3+ 預設收合
+const highL = ['L3', 'L4', 'L5', 'L6'];
+
+// 收集該 L 級的所有 methods（跨四式彙整）
+function getMethodsForLevel(levelId: string) {
+  const items = levels.filter((lv) => lv.level === levelId);
+  const methods: any[] = [];
+  for (const lv of items) {
+    for (const m of lv.methods ?? []) {
+      methods.push({
+        stroke: lv.stroke,
+        stroke_zh: raw.strokes?.find((s: any) => s.key === lv.stroke)?.name_zh ?? lv.stroke,
+        name: m.name,
+        detail: m.detail,
+        cue: m.cue,
+      });
+    }
+  }
+  return methods;
+}
+
+function getQuantForLevel(levelId: string) {
+  return levels
+    .filter((lv) => lv.level === levelId && lv.quant)
+    .map((lv) => ({
+      stroke: lv.stroke,
+      stroke_zh: raw.strokes?.find((s: any) => s.key === lv.stroke)?.name_zh ?? lv.stroke,
+      quant: lv.quant,
+    }));
+}
+
+const levelOrder = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+---
+
+<Base
+  title="水感發展 L0–L6"
+  description="水感沿 L0 → L6 一級一級長出來——每級對應訓練方法、觀察指標、量化基準、跨四式共通點。"
+>
+
+  <!-- ═══ Hero ═══ -->
+  <section class="hero">
+    <p class="eyebrow">Water-Sense Spine</p>
+    <h1 class="hero__title">水感發展 L0 – L6</h1>
+    <p class="hero__lead">
+      水感不是教動作教出來的，是沿 <strong>L0 → L6</strong> 一級一級長出來的感知。
+      每級對應訓練方法、觀察指標、量化基準。
+      高 L 預設收合——L0–L2 沒穩不急著看 L3+。
+    </p>
+    <MiniLadder levels={['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']} label="發展脊椎" />
+  </section>
+
+  <!-- ═══ 概述：七級地圖 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">壹</span>七級地圖</h2>
+      <span class="eyebrow sec__tag">7 Levels Overview</span>
+    </header>
+    <p class="sec__lead">一覽每級的核心感知狀態、跨四式共通點。</p>
+    <div class="overview">
+      {levelOrder.map((lv) => {
+        const sample = levels.find((l) => l.level === lv);
+        return (
+          <a href={`#lv-${lv}`} class="overview-card">
+            <span class="overview-card__l">{lv}</span>
+            <h3 class="overview-card__name">{sample?.name_zh ?? ''}</h3>
+            <p class="overview-card__tagline">{sample?.tagline ?? ''}</p>
+            <p class="overview-card__common">{commonPoints[lv]}</p>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- ═══ 逐級展開 ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">貳</span>逐級展開</h2>
+      <span class="eyebrow sec__tag">Level by Level</span>
+    </header>
+    <p class="sec__lead">每級四塊：訓練方法 / 觀察指標 / 量化基準 / 跨四式共通點。</p>
+
+    {levelOrder.map((lv, idx) => {
+      const sample = levels.find((l) => l.level === lv);
+      const methods = getMethodsForLevel(lv);
+      const quants = getQuantForLevel(lv);
+      const isHighL = highL.includes(lv);
+      return (
+        <details class="level" id={`lv-${lv}`} open={!isHighL}>
+          <summary class="level__sum">
+            <span class="level__no">{idx.toString().padStart(2, '0')}</span>
+            <span class="level__l">{lv}</span>
+            <span class="level__name">{sample?.name_zh ?? ''}</span>
+            <span class="level__tagline">{sample?.tagline ?? ''}</span>
+          </summary>
+          <div class="level__body">
+            <!-- 描述 -->
+            {sample?.description && (
+              <p class="level__desc">{sample.description}</p>
+            )}
+
+            <!-- 訓練方法 -->
+            <div class="level__block">
+              <h4 class="level__h">訓練方法</h4>
+              {methods.length > 0 ? (
+                <ul class="method-list">
+                  {methods.map((m) => (
+                    <li class="method">
+                      <div class="method__head">
+                        <span class="method__stroke">{m.stroke_zh}</span>
+                        <span class="method__name">{m.name}</span>
+                      </div>
+                      {m.detail && <p class="method__detail">{m.detail}</p>}
+                      {m.cue && (
+                        <p class="method__cue">「{m.cue}」</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="muted">本級方法散見於各主題，請見對應的 stroke 內頁。</p>
+              )}
+            </div>
+
+            <!-- 觀察指標 -->
+            <div class="level__block">
+              <h4 class="level__h">觀察指標</h4>
+              {(() => {
+                const items = levels.filter((l) => l.level === lv);
+                const indicators: any[] = [];
+                items.forEach((it) => {
+                  (it.indicators ?? []).forEach((ind: any) => {
+                    indicators.push({
+                      stroke: it.stroke,
+                      stroke_zh: raw.strokes?.find((s: any) => s.key === it.stroke)?.name_zh ?? it.stroke,
+                      ...ind,
+                    });
+                  });
+                });
+                if (indicators.length === 0) {
+                  return <p class="muted">本級以行為觀察 + 感受語為主，無文字化指標。</p>;
+                }
+                return (
+                  <ul class="ind-list">
+                    {indicators.map((ind) => (
+                      <li class="ind">
+                        <span class="ind__stroke">{ind.stroke_zh}</span>
+                        <span class="ind__type">{ind.type}</span>
+                        <span class="ind__txt">{ind.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
+            </div>
+
+            <!-- 量化基準 -->
+            <div class="level__block">
+              <h4 class="level__h">量化基準</h4>
+              {quants.length > 0 ? (
+                <ul class="quant-list">
+                  {quants.map((q) => (
+                    <li class="quant">
+                      <span class="quant__stroke">{q.stroke_zh}</span>
+                      <span class="quant__txt">{q.quant}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="muted">以行為觀察和感受語為主，無數字基準。</p>
+              )}
+            </div>
+
+            <!-- 跨四式共通點 -->
+            <div class="level__block level__block--common">
+              <h4 class="level__h">跨四式共通點</h4>
+              <p>{commonPoints[lv]}</p>
+            </div>
+          </div>
+        </details>
+      );
+    })}
+  </section>
+
+  <style>
+    .hero {
+      padding: var(--space-6) 0 var(--space-5);
+      border-bottom: 2px solid var(--color-rule-strong);
+    }
+    .hero__title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(var(--type-2xl), 5vw, var(--type-3xl));
+      line-height: 1.1;
+      margin: var(--space-2) 0 var(--space-3);
+    }
+    .hero__lead {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+    .hero :global(.mini-ladder) { margin-top: var(--space-3); }
+
+    .sec {
+      margin-top: var(--space-7);
+      padding-top: var(--space-4);
+      border-top: 2px solid var(--color-rule-strong);
+    }
+    .sec__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .sec__title {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: clamp(var(--type-xl), 4vw, var(--type-2xl));
+      margin: 0;
+    }
+    .sec__no {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      color: var(--color-accent);
+      margin-right: 0.4em;
+    }
+    .sec__tag { color: var(--color-sub); }
+    .sec__lead {
+      font-size: var(--type-sm);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+
+    /* ═══ Overview ═══ */
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-2);
+    }
+    .overview-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+      text-decoration: none;
+      color: var(--color-ink);
+      transition: border-color var(--duration-short) var(--ease-standard);
+    }
+    .overview-card:hover { border-color: var(--color-accent); }
+    .overview-card__l {
+      font-family: var(--font-mono);
+      font-size: var(--type-md);
+      font-weight: 700;
+      color: var(--color-accent);
+    }
+    .overview-card__name {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0;
+    }
+    .overview-card__tagline {
+      font-size: var(--type-xs);
+      color: var(--color-sub);
+      line-height: 1.4;
+      margin: 0;
+    }
+    .overview-card__common {
+      font-size: var(--type-xs);
+      color: var(--color-ink-soft);
+      line-height: 1.5;
+      margin: var(--space-1) 0 0;
+      border-top: 1px dashed var(--color-rule);
+      padding-top: var(--space-1);
+    }
+
+    /* ═══ Level details ═══ */
+    .level {
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+      margin-bottom: var(--space-3);
+    }
+    .level__sum {
+      list-style: none;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      grid-template-rows: auto auto;
+      column-gap: var(--space-3);
+      row-gap: 2px;
+      align-items: baseline;
+      padding: var(--space-3);
+    }
+    .level__sum::-webkit-details-marker { display: none; }
+    .level__sum:hover { background: var(--color-bg-soft); }
+    .level__no {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-mono);
+      color: var(--color-sub);
+      grid-row: 1;
+      grid-column: 1;
+    }
+    .level__l {
+      font-family: var(--font-mono);
+      font-size: var(--type-2xl);
+      font-weight: 700;
+      color: var(--color-accent);
+      line-height: 1;
+      grid-row: 1 / 3;
+      grid-column: 2;
+    }
+    .level__name {
+      font-family: var(--font-serif);
+      font-size: var(--type-lg);
+      font-weight: 600;
+      grid-row: 1;
+      grid-column: 3;
+    }
+    .level__tagline {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      grid-row: 2;
+      grid-column: 3;
+    }
+    .level[open] .level__sum {
+      border-bottom: 1px solid var(--color-rule);
+    }
+    .level__body {
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .level__desc {
+      font-size: var(--type-sm);
+      color: var(--color-ink);
+      line-height: 1.7;
+      margin: 0;
+      border-left: 2px solid var(--color-accent);
+      padding-left: var(--space-2);
+    }
+    .level__block {
+      border-top: 1px dashed var(--color-rule);
+      padding-top: var(--space-2);
+    }
+    .level__block--common {
+      background: var(--color-bg-soft);
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      margin-top: var(--space-2);
+    }
+    .level__block--common p { margin: 0; font-size: var(--type-sm); line-height: 1.7; }
+    .level__h {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0 0 var(--space-2);
+      color: var(--color-ink);
+    }
+
+    /* method list */
+    .method-list, .ind-list, .quant-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .method {
+      padding: var(--space-2);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg);
+    }
+    .method__head {
+      display: flex;
+      gap: var(--space-2);
+      align-items: baseline;
+      margin-bottom: 2px;
+      flex-wrap: wrap;
+    }
+    .method__stroke {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+    .method__name {
+      font-family: var(--font-serif);
+      font-size: var(--type-sm);
+      font-weight: 600;
+    }
+    .method__detail {
+      font-size: var(--type-xs);
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      margin: 0 0 2px;
+    }
+    .method__cue {
+      font-size: var(--type-xs);
+      color: var(--color-ink);
+      line-height: 1.5;
+      margin: 0;
+      border-left: 2px solid var(--color-accent);
+      padding-left: var(--space-2);
+    }
+
+    /* indicator */
+    .ind, .quant {
+      display: flex;
+      gap: var(--space-2);
+      align-items: baseline;
+      padding: 4px 0;
+      font-size: var(--type-sm);
+      border-top: 1px dashed var(--color-rule);
+    }
+    .ind:first-child, .quant:first-child { border-top: none; }
+    .ind__stroke, .quant__stroke {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      color: var(--color-accent);
+      flex: 0 0 60px;
+    }
+    .ind__type {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      color: var(--color-sub);
+      flex: 0 0 60px;
+    }
+    .ind__txt, .quant__txt {
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .muted { color: var(--color-sub); font-size: var(--type-sm); }
+
+    @media (max-width: 600px) {
+      .overview {
+        grid-template-columns: 1fr;
+      }
+      .level__sum {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      .level__l {
+        grid-row: 1 / 4;
+        grid-column: 1;
+      }
+      .level__name { grid-row: 1; grid-column: 2; }
+      .level__tagline { grid-row: 2; grid-column: 2; }
+      .level__no { grid-row: 3; grid-column: 2; }
+    }
+  </style>
+</Base>

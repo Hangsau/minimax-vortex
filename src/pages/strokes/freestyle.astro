@@ -1,0 +1,88 @@
+---
+/**
+ * freestyle.astro — 自由式內頁
+ *
+ * 資料源：src/data/free.yaml（8 個 moves）
+ * Frontmatter：src/content/freestyle/_index.md
+ *
+ * 設計：master-detail（左 rail + 右 panel，hash routing）
+ *   #overview — 概覽
+ *   #moves    — 8 個動作分解（每個 <details> 預設摺疊）
+ *   #deeper   — 常見誤區 · 機制 · 水感進程
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import StrokePage from '../../components/StrokePage.astro';
+import type { Move } from '../../components/StrokePage.astro';
+
+const yamlPath = path.join(process.cwd(), 'src/data/free.yaml');
+const data = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as {
+  premise: string;
+  moves: Move[];
+};
+
+// 標準化 moves（drills 確保是陣列）
+const moves: Move[] = data.moves.map((m: any) => ({
+  n: m.n,
+  name: m.name,
+  one: m.one,
+  l: m.l,
+  physical: m.physical,
+  boundary: m.boundary,
+  drills: Array.isArray(m.drills) ? m.drills : [],
+  cue_bad: m.cue_bad,
+  cue_why: m.cue_why,
+  cue_good: m.cue_good,
+  lnote: m.lnote,
+}));
+
+const overview = `
+<p>自由式的推進力主要來自<mark>划手</mark>，踢腿佔比相對低（短距離 10–15%，長距離更高維持水平）。但這不代表划手可以蠻力劃——划手距離（SL）是技術指標、划頻（SR）是生理指標，兩者<mark>不可混為一談</mark>。</p>
+<p>自由式的最大挑戰是<mark>疲勞序列</mark>：SL 先掉、SR 後掉，但泳者本能反應剛好相反——感覺慢就划更快。L4 開始學會「中途察覺 SL 開始縮短」，是疲勞崩潰序列的第一層攔截。</p>
+<p>本頁 8 個動作沿「入水 → 捕水 → 拉水 → 旋轉 → 踢水 → 頭部 → 划距 → 連動鏈」展開。後段動作（L5+）需要基礎感知穩定後才會浮現。</p>
+`;
+
+const deeper = [
+  {
+    heading: '划距 vs 划頻：兩種不同的對象',
+    body: `
+<p>划手距離（SL）是<mark>技術品質指標</mark>：每划推多遠代表每次划水的有效輸出。划頻（SR）是<mark>生理指標</mark>：每分鐘划幾次代表代謝系統的輸出能力。SL × SR = 速度，三者各代表不同的物理意義。</p>
+<p>疲勞時 SL 先下降，SR 後下降——但泳者本能反應是<mark>感覺慢就划更快</mark>（提高 SR），結果是「每划推進力下降但划次增加」→ 消耗更多能量 → 技術繼續惡化。精英的優勢不在 SR 更高，而在<mark>高 SR 下 SL 不下降</mark>。</p>
+<p>這意味著：練技術時優先看 SL（每划有沒有水感、推多遠），練體能時才看 SR。混在一起看會誤判瓶頸位置。</p>
+`,
+  },
+  {
+    heading: '旋轉：放大器不是引擎',
+    body: `
+<p>身體旋轉本身<mark>不產生推進力</mark>。但旋轉速度峰值與划手推力峰值<mark>耦合</mark>時，能量疊加放大推力——旋轉是放大器，不是引擎。</p>
+<p>啟動旋轉的是推水末段的<mark>肩胛肌群</mark>（菱形肌收縮、後縮肩胛骨），髖部被動跟隨。常見錯誤是主動轉髖帶動划手——這混淆了因果，高划頻下刻意轉髖會造成時機錯亂與額外能量消耗。</p>
+<p>旋轉幅度有風格差異：Hip-driven 髖旋轉 45–60°，Shoulder-driven 僅 20–30°，兩者都有效，不存在唯一正確值。但<mark>高划頻下物理上沒有時間完成大幅旋轉</mark>，這是力學邊界不是感知問題。</p>
+`,
+  },
+  {
+    heading: '水感進程：從 L0 換氣到 L6 連動鏈',
+    body: `
+<p>自由式的水感進程沿著感知層次展開：</p>
+<ul>
+<li><strong>L0–L1</strong> — 換氣不嗆水、腳不沉、漂得起來。這是底層，前述未穩前任何技術指導都會被遮蔽。</li>
+<li><strong>L2</strong> — 推進感萌芽：動作開始讓身體前進。頭部位置感知（看斜前方、嘴角轉進波凹）與入水位置感知（指尖領先、積極前伸）在此建立。</li>
+<li><strong>L3</strong> — 水感出現但不穩定：偶爾抓到，下一趟又消失。EVF（高肘抓水）、拉水加速、頭部位置微調都屬此層。</li>
+<li><strong>L4</strong> — 壓力下感知維持不住：技術開始崩潰。旋轉耦合、踢水節律整合、划距中途察覺都屬此層。</li>
+<li><strong>L5</strong> — 自動化過渡：高速下開始穩定。旋轉耦合感知、疲勞下維持 SL、回臂入水放大對側推力開始浮現。</li>
+<li><strong>L6</strong> — 自動化完成：不需要刻意思考。連動鏈耦合、疲勞崩潰序列延後出現是此層里程碑。</li>
+</ul>
+<p>每個 L 對應特定的 SWOLF 量化基準（見 L0–L6 完整序列）。本頁「層級筆記（lnote）」標示每個動作的 L 帶。</p>
+`,
+  },
+];
+---
+<StrokePage
+  title="自由式"
+  titleEn="Freestyle"
+  premise={data.premise}
+  levels={['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']}
+  overview={overview}
+  moves={moves}
+  deeper={deeper}
+/>

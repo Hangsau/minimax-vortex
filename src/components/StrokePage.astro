@@ -1,0 +1,798 @@
+---
+/**
+ * StrokePage.astro — 六式 stroke 內頁共用 layout
+ *
+ * 設計依據：
+ * - vortex-rebuild §1.5 — master-detail（vortex-stroke.html 原版模式）
+ * - entry-wayfinding H4 — L0-L6 共用座標系（MiniLadder 嵌入）
+ * - vortex-rebuild §1.9 — Cognitive Gate（L0 沒穩的 drill 預設摺合 + 警示文字）
+ * - design-principles §5 — details 元素原生 progressive disclosure
+ * - design-craft §1 — Material 3 Fade Through 200ms
+ *
+ * 三個面板（hash routing）：
+ *   #overview — 概覽（premise + 描述這式的水感特點）
+ *   #moves    — 動作分解（每個 move 一個 <details>，預設摺疊）
+ *   #deeper   — 深入（常見誤區 + 機制 + 水感進程）
+ *
+ * 預設聚焦在 #moves（最常用）。
+ */
+import Base from '../layouts/Base.astro';
+import MiniLadder from './MiniLadder.astro';
+
+export interface Move {
+  n: number;
+  name: string;
+  one: string;
+  l?: string;
+  physical: string;
+  boundary?: string;
+  drills?: string[];
+  cue_bad?: string;
+  cue_why?: string;
+  cue_good?: string;
+  lnote?: string;
+}
+
+export interface Props {
+  title: string;        // 中式名（自由式 / 仰式 / ...）
+  titleEn: string;      // 英文名
+  premise: string;      // 一句話 premise（含 <mark> 與 cert 標記）
+  levels: string[];     // 此式覆蓋的 L0-L6
+  overview: string;     // 概覽段（純 markdown，rendered to HTML by caller 或 inline）
+  moves: Move[];        // 動作分解清單
+  deeperTitle?: string; // 深入區標題（預設「常見誤區 / 機制 / 水感進程」）
+  deeper?: {            // 深入內容（純 HTML 段落陣列，由 caller 組裝）
+    heading: string;
+    body: string;       // 可含 <mark>
+  }[];
+  meta?: {
+    drillCount: number; // 動作數
+    mainMuscles?: string;
+    certNote?: string;
+  };
+}
+
+const {
+  title,
+  titleEn,
+  premise,
+  levels,
+  overview,
+  moves,
+  deeperTitle = '常見誤區 · 機制 · 水感進程',
+  deeper = [],
+  meta = {},
+} = Astro.props;
+
+const siteName = 'minimax-vortex';
+
+// ══════ 動作面板的 mini-ladder 標籤 ══════
+// 從 moves 的 l 欄位收集（去除空值、去重），作為「本頁動作覆蓋層級」
+const moveLevels = Array.from(new Set(
+  moves
+    .map((m) => m.l)
+    .filter((l): l is string => !!l)
+    .flatMap((l) => l.match(/L\d|前置|pre/g) ?? [])
+    .map((l) => l.toUpperCase())
+)).sort();
+const ladderLevels = moveLevels.length > 0 ? moveLevels : levels;
+---
+<Base title={title} description={`${title}（${titleEn}）— 水感知識庫。${moves.length} 個動作分解，含常見誤區與水感進程。`}>
+  <!-- ══════ Hero — 主焦點 ══════ -->
+  <section class="stroke-hero">
+    <div class="stroke-hero__head">
+      <p class="eyebrow">六式 · {titleEn}</p>
+      <h1 class="stroke-hero__title">{title}</h1>
+      <p class="stroke-hero__premise" set:html={premise}></p>
+      <div class="stroke-hero__meta">
+        <MiniLadder
+          levels={ladderLevels}
+          label="本式動作覆蓋層級"
+          variant="compact"
+        />
+        <span class="stroke-hero__count">
+          <span class="stroke-hero__count-num">{moves.length}</span>
+          <span class="stroke-hero__count-label">個動作分解</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ Master-Detail：左 rail + 右 panel ══════ -->
+  <section class="stroke-layout" data-stroke-layout>
+    <!-- 左側 sticky rail -->
+    <aside class="stroke-rail" aria-label="本頁分區導覽">
+      <nav class="stroke-rail__nav">
+        <a href="#overview" class="stroke-rail__link is-active" data-panel-link="overview">
+          <span class="stroke-rail__no">壹</span>
+          <span class="stroke-rail__zh">概覽</span>
+          <span class="stroke-rail__en">Overview</span>
+        </a>
+        <a href="#moves" class="stroke-rail__link" data-panel-link="moves">
+          <span class="stroke-rail__no">貳</span>
+          <span class="stroke-rail__zh">動作分解</span>
+          <span class="stroke-rail__en">{moves.length} Moves</span>
+        </a>
+        <a href="#deeper" class="stroke-rail__link" data-panel-link="deeper">
+          <span class="stroke-rail__no">參</span>
+          <span class="stroke-rail__zh">深入</span>
+          <span class="stroke-rail__en">Deeper</span>
+        </a>
+      </nav>
+
+      <!-- 返回六式選單 -->
+      <div class="stroke-rail__back">
+        <a href="/" class="stroke-rail__back-link">
+          ← 返回六式總覽
+        </a>
+      </div>
+    </aside>
+
+    <!-- 右側主面板（hash routing + fade-through 200ms swap） -->
+    <div class="stroke-panels" data-panels>
+
+      <!-- 面板 1：概覽 -->
+      <article
+        class="stroke-panel"
+        id="overview"
+        data-panel="overview"
+      >
+        <header class="stroke-panel__head">
+          <span class="stroke-panel__no">壹</span>
+          <h2 class="stroke-panel__title">概覽</h2>
+          <span class="eyebrow stroke-panel__tag">Overview</span>
+        </header>
+        <div class="stroke-panel__body">
+          <div class="overview-prose" set:html={overview}></div>
+        </div>
+      </article>
+
+      <!-- 面板 2：動作分解 -->
+      <article
+        class="stroke-panel"
+        id="moves"
+        data-panel="moves"
+        hidden
+      >
+        <header class="stroke-panel__head">
+          <span class="stroke-panel__no">貳</span>
+          <h2 class="stroke-panel__title">動作分解</h2>
+          <span class="eyebrow stroke-panel__tag">{moves.length} Moves</span>
+        </header>
+        <div class="stroke-panel__body">
+          <p class="moves-intro muted">
+            每個動作預設摺疊，點開看完整內容。先讀「一句話」（<code>one</code>）判斷是否相關，再展開物理機制與 cue。
+          </p>
+
+          <div class="moves-list">
+            {moves.map((m) => {
+              // Cognitive Gate：若動作需要 L3+，且 L0 未穩，預設摺疊 + 警示文字
+              const isHighLevel = /L[3-6]/.test(m.l ?? '');
+              const gateNote = isHighLevel
+                ? '本動作預設摺疊 — L0–L2 基礎未穩前不宜深追。'
+                : '';
+              return (
+                <details class="move" name="moves-group">
+                  <summary class="move__summary">
+                    <span class="move__no">{String(m.n).padStart(2, '0')}</span>
+                    <span class="move__name">{m.name}</span>
+                    {m.l && <span class="move__l">{m.l}</span>}
+                  </summary>
+                  <div class="move__body">
+                    {gateNote && (
+                      <p class="move__gate" role="note">
+                        <span class="move__gate-mark" aria-hidden="true">⚠</span>
+                        {gateNote}
+                      </p>
+                    )}
+
+                    <p class="move__one">{m.one}</p>
+
+                    <section class="move__section">
+                      <h3 class="move__h">物理機制</h3>
+                      <p set:html={m.physical}></p>
+                    </section>
+
+                    {m.boundary && (
+                      <section class="move__section move__section--boundary">
+                        <h3 class="move__h">邊界（硬體前提）</h3>
+                        <p set:html={m.boundary}></p>
+                      </section>
+                    )}
+
+                    {m.cue_bad && (
+                      <section class="move__section move__section--cue">
+                        <h3 class="move__h">指導語對照</h3>
+                        <dl class="cue-pair">
+                          <dt class="cue-pair__bad">常見誤導</dt>
+                          <dd>{m.cue_bad}</dd>
+                          {m.cue_why && (
+                            <>
+                              <dt class="cue-pair__why">為何失效</dt>
+                              <dd set:html={m.cue_why}></dd>
+                            </>
+                          )}
+                          <dt class="cue-pair__good">建議 cue</dt>
+                          <dd>{m.cue_good}</dd>
+                        </dl>
+                      </section>
+                    )}
+
+                    {m.drills && m.drills.length > 0 && (
+                      <section class="move__section">
+                        <h3 class="move__h">練習</h3>
+                        <ul class="move__drills">
+                          {m.drills.map((d) => (
+                            <li class="move__drill">{d}</li>
+                          ))}
+                        </ul>
+                      </section>
+                    )}
+
+                    {m.lnote && (
+                      <section class="move__section move__section--lnote">
+                        <h3 class="move__h">層級筆記</h3>
+                        <p set:html={m.lnote}></p>
+                      </section>
+                    )}
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        </div>
+      </article>
+
+      <!-- 面板 3：深入 -->
+      <article
+        class="stroke-panel"
+        id="deeper"
+        data-panel="deeper"
+        hidden
+      >
+        <header class="stroke-panel__head">
+          <span class="stroke-panel__no">參</span>
+          <h2 class="stroke-panel__title">{deeperTitle}</h2>
+          <span class="eyebrow stroke-panel__tag">Deeper</span>
+        </header>
+        <div class="stroke-panel__body">
+          {deeper.length === 0 ? (
+            <p class="muted">（此式深入內容待補）</p>
+          ) : (
+            <div class="deeper-list">
+              {deeper.map((d) => (
+                <section class="deeper-item">
+                  <h3 class="deeper-item__h">{d.heading}</h3>
+                  <div class="deeper-item__body" set:html={d.body}></div>
+                </section>
+              ))}
+            </div>
+          )}
+        </div>
+      </article>
+
+    </div>
+  </section>
+</Base>
+
+<script>
+  // ══════ Master-detail panel swap（hash routing + fade-through 200ms）══════
+  // 設計：design-craft §1 — Material 3 Fade Through（opacity 0→1 + translateY 8px→0）
+  // 不破壞 <details> 原生展開行為，只負責 panel 切換。
+  type PanelName = 'overview' | 'moves' | 'deeper';
+
+  function activate(panel: PanelName, pushHash = true) {
+    const layout = document.querySelector<HTMLElement>('[data-stroke-layout]');
+    if (!layout) return;
+    const panels = layout.querySelectorAll<HTMLElement>('[data-panel]');
+    const links = layout.querySelectorAll<HTMLElement>('[data-panel-link]');
+
+    panels.forEach((p) => {
+      if (p.dataset.panel === panel) {
+        // Fade-through：先隱藏 → 觸發 reflow → 顯示動畫
+        p.hidden = false;
+        p.classList.remove('is-entering');
+        // force reflow
+        void p.offsetWidth;
+        p.classList.add('is-entering');
+      } else {
+        p.hidden = true;
+      }
+    });
+
+    links.forEach((a) => {
+      a.classList.toggle('is-active', a.dataset.panelLink === panel);
+    });
+
+    if (pushHash) {
+      history.replaceState(null, '', `#${panel}`);
+    }
+  }
+
+  function readHash(): PanelName {
+    const raw = window.location.hash.replace('#', '');
+    if (raw === 'overview' || raw === 'moves' || raw === 'deeper') return raw;
+    return 'overview';
+  }
+
+  // 點擊 rail link
+  document.querySelectorAll<HTMLAnchorElement>('[data-panel-link]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const panel = a.dataset.panelLink as PanelName | undefined;
+      if (!panel) return;
+      e.preventDefault();
+      activate(panel);
+      // 滾到面板頂端（略低於 header）
+      const target = document.getElementById(panel);
+      if (target) {
+        const top = target.getBoundingClientRect().top + window.scrollY - 20;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // hash 變化（瀏覽器前進/後退）
+  window.addEventListener('hashchange', () => activate(readHash(), false));
+
+  // 初始：依 hash 啟動對應 panel（預設 overview）
+  activate(readHash(), false);
+</script>
+
+<style>
+  /* ══════ Hero ══════ */
+  .stroke-hero {
+    padding: var(--space-5) 0 var(--space-5);
+    border-bottom: 2px solid var(--color-rule-strong);
+    margin-bottom: var(--space-5);
+  }
+  .stroke-hero__head {
+    max-width: var(--measure-narrow);
+  }
+  .stroke-hero__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(var(--type-2xl), 6vw, var(--type-4xl));
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tight);
+    margin: var(--space-1) 0 var(--space-3);
+  }
+  .stroke-hero__premise {
+    font-family: var(--font-serif);
+    font-size: var(--type-md);
+    line-height: var(--line-body-cjk);
+    color: var(--color-ink-soft);
+    margin: 0 0 var(--space-4);
+  }
+  .stroke-hero__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .stroke-hero__count {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    font-family: var(--font-mono);
+  }
+  .stroke-hero__count-num {
+    font-size: var(--type-lg);
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+  .stroke-hero__count-label {
+    font-size: var(--type-xs);
+    color: var(--color-sub);
+    letter-spacing: var(--tracking-mono);
+  }
+
+  /* ══════ Master-Detail Layout ══════ */
+  .stroke-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: var(--space-5);
+    align-items: start;
+    margin-bottom: var(--space-7);
+  }
+
+  /* 左側 sticky rail */
+  .stroke-rail {
+    position: sticky;
+    top: var(--space-4);
+    align-self: start;
+    border-right: 1px solid var(--color-rule);
+    padding-right: var(--space-3);
+  }
+  .stroke-rail__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .stroke-rail__link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: var(--space-2);
+    padding: var(--space-2) var(--space-2);
+    border-left: 3px solid transparent;
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: background-color var(--duration-short) var(--ease-standard),
+                border-left-color var(--duration-short) var(--ease-standard);
+  }
+  .stroke-rail__link:hover {
+    background: var(--color-bg-soft);
+  }
+  .stroke-rail__link.is-active {
+    background: var(--color-bg-soft);
+    border-left-color: var(--color-accent);
+  }
+  .stroke-rail__no {
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-family: var(--font-mono);
+    font-size: var(--type-sm);
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+  .stroke-rail__zh {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--type-md);
+    line-height: 1.2;
+  }
+  .stroke-rail__en {
+    font-family: var(--font-mono);
+    font-size: var(--type-tiny);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-sub);
+  }
+  .stroke-rail__back {
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-rule);
+  }
+  .stroke-rail__back-link {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--color-sub);
+    text-decoration: none;
+    letter-spacing: var(--tracking-mono);
+  }
+  .stroke-rail__back-link:hover {
+    color: var(--color-accent);
+  }
+
+  /* 右側 panel 容器 */
+  .stroke-panels {
+    min-width: 0;
+  }
+  .stroke-panel {
+    border-top: 2px solid var(--color-rule-strong);
+    padding-top: var(--space-4);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--duration-short) var(--ease-standard),
+                transform var(--duration-short) var(--ease-standard);
+  }
+  .stroke-panel.is-entering {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .stroke-panel[hidden] {
+    display: none;
+  }
+  .stroke-panel__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .stroke-panel__no {
+    font-family: var(--font-mono);
+    font-size: var(--type-xl);
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+  .stroke-panel__title {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--type-2xl);
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: var(--tracking-tight);
+  }
+  .stroke-panel__tag {
+    color: var(--color-sub);
+  }
+  .stroke-panel__body {
+    max-width: var(--measure-wide);
+  }
+
+  /* 概覽 prose */
+  .overview-prose {
+    font-family: var(--font-serif);
+    font-size: var(--type-base);
+    line-height: var(--line-body-cjk);
+    color: var(--color-ink-soft);
+  }
+  .overview-prose :global(p) {
+    margin: 0 0 var(--space-3);
+  }
+  .overview-prose :global(mark) {
+    background: var(--color-accent-bg);
+    color: var(--color-ink);
+    padding: 0 2px;
+  }
+
+  /* 動作列表 */
+  .moves-intro {
+    font-size: var(--type-sm);
+    margin: 0 0 var(--space-4);
+    line-height: var(--line-body-cjk);
+  }
+  .moves-intro code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--color-bg-soft);
+    padding: 1px 4px;
+    border: 1px solid var(--color-rule);
+  }
+
+  .moves-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* 單一 move */
+  .move {
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg-elev);
+    transition: border-color var(--duration-short) var(--ease-standard);
+  }
+  .move[open] {
+    border-color: var(--color-rule-strong);
+  }
+  .move__summary {
+    list-style: none;
+    cursor: pointer;
+    padding: var(--space-3) var(--space-4);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .move__summary::-webkit-details-marker {
+    display: none;
+  }
+  .move__summary:hover {
+    background: var(--color-bg-soft);
+  }
+  .move__no {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--color-accent);
+    font-weight: 700;
+    letter-spacing: var(--tracking-mono);
+  }
+  .move__name {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--type-md);
+    line-height: 1.2;
+  }
+  .move__l {
+    font-family: var(--font-mono);
+    font-size: var(--type-tiny);
+    color: var(--color-sub);
+    letter-spacing: var(--tracking-mono);
+    padding: 2px var(--space-2);
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg-soft);
+  }
+
+  .move__body {
+    padding: 0 var(--space-4) var(--space-4);
+    border-top: 1px solid var(--color-rule);
+  }
+
+  .move__one {
+    font-family: var(--font-serif);
+    font-size: var(--type-md);
+    color: var(--color-ink);
+    line-height: 1.4;
+    margin: var(--space-3) 0;
+    padding-left: var(--space-3);
+    border-left: 3px solid var(--color-accent);
+  }
+
+  .move__gate {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    margin: var(--space-3) 0;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-warn);
+    background: #fdf6e3;  /* fallback for --color-warn-bg, 暫時固定色 */
+    font-size: var(--type-sm);
+    color: var(--color-ink-soft);
+  }
+  .move__gate-mark {
+    flex-shrink: 0;
+    font-size: var(--type-md);
+    line-height: 1.2;
+  }
+
+  .move__section {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px dashed var(--color-rule);
+  }
+  .move__section:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .move__section--boundary {
+    background: var(--color-bg-soft);
+    margin-left: calc(-1 * var(--space-3));
+    margin-right: calc(-1 * var(--space-3));
+    padding: var(--space-3);
+    border-top: none;
+    border-left: 3px solid var(--color-info);
+  }
+  .move__section--cue {
+    border-left: 3px solid var(--color-warn);
+    padding-left: var(--space-3);
+  }
+  .move__section--lnote {
+    border-left: 3px solid var(--color-cert-derived);
+    padding-left: var(--space-3);
+  }
+
+  .move__h {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-sub);
+    margin: 0 0 var(--space-2);
+  }
+  .move__section :global(p) {
+    font-size: var(--type-sm);
+    line-height: var(--line-body-cjk);
+    color: var(--color-ink-soft);
+    margin: 0 0 var(--space-2);
+  }
+  .move__section :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .move__section :global(mark) {
+    background: var(--color-accent-bg);
+    color: var(--color-ink);
+    padding: 0 2px;
+  }
+
+  /* cue 對照表 */
+  .cue-pair {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1) var(--space-3);
+    margin: 0;
+    font-size: var(--type-sm);
+  }
+  .cue-pair dt {
+    font-family: var(--font-mono);
+    font-size: var(--type-tiny);
+    letter-spacing: var(--tracking-mono);
+    color: var(--color-sub);
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .cue-pair dd {
+    margin: 0;
+    color: var(--color-ink);
+    line-height: var(--line-body-cjk);
+  }
+  .cue-pair__bad { color: var(--color-bad) !important; }
+  .cue-pair__why { color: var(--color-info) !important; }
+  .cue-pair__good { color: var(--color-good) !important; }
+
+  /* drills */
+  .move__drills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+  .move__drill {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    letter-spacing: var(--tracking-mono);
+    color: var(--color-ink);
+    padding: 2px var(--space-2);
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg-soft);
+  }
+
+  /* 深入區 */
+  .deeper-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  .deeper-item__h {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--type-lg);
+    margin: 0 0 var(--space-2);
+    line-height: 1.2;
+  }
+  .deeper-item__body {
+    font-family: var(--font-serif);
+    font-size: var(--type-base);
+    line-height: var(--line-body-cjk);
+    color: var(--color-ink-soft);
+    max-width: var(--measure-narrow);
+  }
+  .deeper-item__body :global(p) {
+    margin: 0 0 var(--space-3);
+  }
+  .deeper-item__body :global(mark) {
+    background: var(--color-accent-bg);
+    color: var(--color-ink);
+    padding: 0 2px;
+  }
+  .deeper-item__body :global(ul) {
+    margin: 0 0 var(--space-3);
+    padding-left: var(--space-4);
+  }
+  .deeper-item__body :global(li) {
+    margin-bottom: var(--space-1);
+  }
+
+  /* ══════ Responsive ══════ */
+  @media (max-width: 820px) {
+    .stroke-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+    .stroke-rail {
+      position: static;
+      border-right: none;
+      border-bottom: 1px solid var(--color-rule);
+      padding-right: 0;
+      padding-bottom: var(--space-3);
+    }
+    .stroke-rail__nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+    .stroke-rail__link {
+      grid-template-columns: auto auto;
+      grid-template-rows: auto;
+      border-left: none;
+      border-bottom: 3px solid transparent;
+      padding: var(--space-1) var(--space-2);
+    }
+    .stroke-rail__link.is-active {
+      border-left: none;
+      border-bottom-color: var(--color-accent);
+    }
+    .stroke-rail__en {
+      grid-column: 2;
+    }
+    .stroke-rail__back {
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+    }
+  }
+</style>

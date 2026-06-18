@@ -1,0 +1,76 @@
+---
+/**
+ * breaststroke.astro — 蛙式內頁
+ *
+ * 資料源：src/data/breast.yaml（11 個 moves）
+ * Frontmatter：src/content/breaststroke/_index.md
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import StrokePage from '../../components/StrokePage.astro';
+import type { Move } from '../../components/StrokePage.astro';
+
+const yamlPath = path.join(process.cwd(), 'src/data/breast.yaml');
+const data = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as {
+  premise: string;
+  moves: Move[];
+};
+
+const moves: Move[] = data.moves.map((m: any) => ({
+  n: m.n,
+  name: m.name,
+  one: m.one,
+  l: m.l,
+  physical: m.physical,
+  boundary: m.boundary,
+  drills: Array.isArray(m.drills) ? m.drills : [],
+  cue_bad: m.cue_bad,
+  cue_why: m.cue_why,
+  cue_good: m.cue_good,
+  lnote: m.lnote,
+}));
+
+const overview = `
+<p>蛙式是四式中<mark>阻力最大</mark>的泳式，每個動作週期都在製造和對抗阻力。核心是手腳<mark>時序</mark>，不是力量。</p>
+<p>蛙腿推進力<mark>不是往後蹬的反作用力</mark>，而是 outsweep + insweep 產生<mark>渦流合併後向後噴射</mark>的動量傳遞（Tanaka CFD 2024）。這與「像青蛙一樣踢」的傳統直覺相反——青蛙用腳趾間蹼往前推，蛙式選手用小腿內側和腳往後推，方向相反。</p>
+<p>蛙式是四式中<mark>唯一每個循環都有完整滑行</mark>的泳式。最優滑行結束點是速度開始快速下降時啟動下一個外划——太早打斷動能、太晚需更大力量重新加速。這個時機感知是 L4→L5 核心門檻，也是蛙式感知最難的一個。</p>
+<p>本頁 11 個動作從「阻力存在（火箭漂）」（前置感知）開始，到「波動（俯衝角度）」（L5）結束。涵蓋蛙式特有的時序整合與渦流機制。</p>
+`;
+
+const deeper = [
+  {
+    heading: '手腳時序：推進相交替不重疊',
+    body: `
+<p>蛙式效率<mark>最敏感的變數</mark>是 arm-leg coordination 時序（Nicol 2022）。兩個推進峰值（手 insweep + 腿踢）要盡量接近但<mark>不重疊</mark>——重疊時兩個推進力互相干擾。</p>
+<p>同時動等於同時踩油門和煞車；手完全伸直才踢則製造完全停頓空窗，是競技速度流失主因。收腿準備可在 insweep 末段開始。Late kick（Peaty）在 insweep 啟動時才踢腿——這是蛙式時序的進階優化。</p>
+<p>指導語設計最差的典型：「腳跟碰屁股」——這個描述幾何路徑必然往正中間收，造成膝蓋大幅前移、正面截面積激增、腳掌收完朝上需額外旋轉錯過最佳蹬水時機。正確指令是「腳跟往外側臀部靠」。</p>
+`,
+  },
+  {
+    heading: '渦流整合：腳掌到位再加速夾入',
+    body: `
+<p>腿部夾水是蛙腿主推進機制，<mark>outsweep + insweep 渦流合併後向後噴射</mark>（Tanaka 2024）。渦流要整合，夾水必須加速——<mark>insweep 腳速 r=0.89 對應推進力</mark>（Hayashi 2025）。</p>
+<p>腳掌須翻到斜後方有水壓再加速。增加力量輸出或頻率不對應渦流整合；夾沒有加速則渦流不合併、推進力渦散。對應 cue 是「踩到東西再推」——腳掌有明確水壓感才啟動加速。</p>
+<p>腳掌翻轉不完全是<mark>踝關節 / 髖內旋限制（硬體）</mark>，與翻到位但加速時機太晚（感知）不同，先確認腳掌方向再判斷是哪一類問題。</p>
+`,
+  },
+  {
+    heading: '波動（Wave style）：俯衝角度的副產品',
+    body: `
+<p>波動有兩個功能：<mark>減阻</mark>（收腿時身體傾斜、膝蓋前移量最少）和<mark>流體升力</mark>（俯衝角度產生壓力差向上的力，物理機制確立，蛙式中量化貢獻尚未直接測量）。</p>
+<p>角度對了升力自然出現，<mark>不需特別做動作</mark>。強調「波動要更大 / 讓肩膀升起來 / 刻意游波動」等指令都是反模式——從動作形式反找感知，效果差；波動過度則上身過度出水製造額外波阻。</p>
+<p>腰椎伸展幅度限制肩膀能升起的高度——屬效率上限，動作可完成但 coupling 能量天花板降低，隨年齡下降。波動是 L5 推進的副產品，不是要刻意達成的目標。</p>
+`,
+  },
+];
+---
+<StrokePage
+  title="蛙式"
+  titleEn="Breaststroke"
+  premise={data.premise}
+  levels={['L2', 'L3', 'L4', 'L5']}
+  overview={overview}
+  moves={moves}
+  deeper={deeper}
+/>

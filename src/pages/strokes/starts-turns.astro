@@ -1,0 +1,85 @@
+---
+/**
+ * starts-turns.astro — 出發與轉身內頁
+ *
+ * 資料源：src/data/starts-turns.yaml（7 個 moves，無 l 欄位）
+ * Frontmatter：src/content/starts-turns/_index.md
+ *
+ * 注意：出發/轉身的動作窗口極短（0.5–1 秒），沒有傳統 L 劃分——
+ *   沒有「L0 沒穩不能進 L3」的 progressive disclosure。
+ *   全部 detail 預設摺疊即可。
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import StrokePage from '../../components/StrokePage.astro';
+import type { Move } from '../../components/StrokePage.astro';
+
+const yamlPath = path.join(process.cwd(), 'src/data/starts-turns.yaml');
+const data = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as {
+  premise: string;
+  moves: Move[];
+};
+
+const moves: Move[] = data.moves.map((m: any) => ({
+  n: m.n,
+  name: m.name,
+  one: m.one,
+  l: m.l,                              // 大部分為 undefined（此頁不用 L）
+  physical: m.physical,
+  boundary: m.boundary,
+  drills: Array.isArray(m.drills) ? m.drills : [],
+  cue_bad: m.cue_bad,
+  cue_why: m.cue_why,
+  cue_good: m.cue_good,
+  lnote: m.lnote,
+}));
+
+const overview = `
+<p>出發與轉身的動作窗口極短（<mark>0.5–1 秒</mark>），完成後才感受得到結果——沒有「做到一半修正」的空間，品質取決於<mark>切換瞬間的流線型與方向</mark>。</p>
+<p>這與其他泳式不同：其他泳式是「邊游邊感知、邊修正」，出發/轉身是「執行前準備充分、執行中無修正空間、執行後用結果驗證」。指導語設計因此完全不同——指令要明確指向執行前的具體準備。</p>
+<p>精英選手起跳角度 <mark>21–27°</mark>（部分研究低至 -18.7°，即略向下），遠低於傳統教學的 30–40°。降低起跳角度→水平速度增加，飛行距離縮短但入水後速度保留更好。Kick Start（現代主流）前後腳分工：後腳產生水平速度（蹬推向前），前腳產生垂直速度（調整飛行弧線）。</p>
+<p>本頁 7 個動作沿「出發 → 入水 → 接近 → 觸牆推蹬 → IM 轉身 ×2 → Pullout」展開。IM 轉身（蝶→背、背→蛙）有 7.5m 計時測試的客觀驗證方法。</p>
+`;
+
+const deeper = [
+  {
+    heading: '切換瞬間：流線型與方向',
+    body: `
+<p>出發/轉身的<mark>核心難度是「沒有修正空間」</mark>——切換瞬間的流線型與方向決定後續 5–10m 的速度保留。</p>
+<p>觸牆前<mark>雙臂已在流線型</mark>（在腳觸牆之前完成），讓推蹬力量直接轉換為流線型水平速度，不需推蹬後再整理姿勢。手臂未在觸牆前到位會讓動能損失在整理姿勢的時間——這是常見效率損失源頭。</p>
+<p>翻滾接近的核心是<mark>頭部朝下、不抬頭看牆</mark>。抬頭看牆會讓頸部伸展、破壞翻滾的旋轉動量，並強迫身體提前減速。有經驗的泳者靠計步（stroke count）判斷翻滾時機——從五線旗到牆的划手次數是固定的，熟悉後不需視覺確認。</p>
+`,
+  },
+  {
+    heading: 'Kick Start 與現代起跳角度',
+    body: `
+<p>傳統教學的起跳角度 30–40°<mark>對應過時的物理模型</mark>——假設起跳飛行時間長、垂直速度貢獻大。現代 CFD 與水下測量顯示：起跳飛行時間短（<1 秒），垂直速度入水後立刻被阻力抵消，主要貢獻是水平速度。</p>
+<p>Kick Start 取代 Track Start 成為主流：後腳產生水平速度（蹬推向前），前腳產生垂直速度（調整飛行弧線）。兩個分工讓水平動量最大化。</p>
+<p>起跳台上等待裁判指令時全身張力升高，入水瞬間的感知容易被遮蔽——這是<mark>張力造成的感知遮蔽（C 型高風險時刻）</mark>，不是技術不足，比賽出發訓練須特別注意。</p>
+`,
+  },
+  {
+    heading: 'IM 轉身：三種轉法擇一',
+    body: `
+<p>背→蛙：規則要求觸牆時肩部仍在仰式位置（與水平面夾角 < 90°）；離牆時肩部須已通過垂直面朝向蛙式（≥ 90° 旋轉完成）。三種轉法 7.5m 成績<mark>無顯著差異</mark>（PMC7918682）。</p>
+<ul>
+<li><strong>Open turn</strong>：旋轉弧度最大、容錯率高。</li>
+<li><strong>Bucket turn</strong>：向後翻滾、憋氣需求高（須完整 pullout）。</li>
+<li><strong>Crossover turn</strong>：觸牆與旋轉幾乎同時、動作窗口最短、腳觸牆位置最淺、推蹬最水平。</li>
+</ul>
+<p>選轉法不靠感覺判斷哪種「比較快」，用<mark>計時測試（觸牆到 7.5m）</mark>比較——個人執行最一致的那種，才是實際最快的（Open 練到完全一致可能比 Crossover 練到 80% 穩定更快）。</p>
+<p>蝶→背是四個 IM 轉身中<mark>最快</mark>的（PubMed 30694108）。速度優勢來自：不需翻滾，雙手觸牆後直接縮腿，腳快速落牆推出。三個常見效率損失：觸牆後停頓確認、縮腿路徑過長、觸牆後換氣。<mark>折疊感</mark>（膝蓋快速收向胸口，不繞圈）代表縮腿路徑最短。</p>
+`,
+  },
+];
+---
+<StrokePage
+  title="出發與轉身"
+  titleEn="Starts & Turns"
+  premise={data.premise}
+  levels={['L3', 'L4', 'L5']}
+  overview={overview}
+  moves={moves}
+  deeper={deeper}
+/>

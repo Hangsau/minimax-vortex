@@ -1,0 +1,76 @@
+---
+/**
+ * backstroke.astro — 仰式內頁
+ *
+ * 資料源：src/data/back.yaml（9 個 moves）
+ * Frontmatter：src/content/backstroke/_index.md
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import StrokePage from '../../components/StrokePage.astro';
+import type { Move } from '../../components/StrokePage.astro';
+
+const yamlPath = path.join(process.cwd(), 'src/data/back.yaml');
+const data = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as {
+  premise: string;
+  moves: Move[];
+};
+
+const moves: Move[] = data.moves.map((m: any) => ({
+  n: m.n,
+  name: m.name,
+  one: m.one,
+  l: m.l,
+  physical: m.physical,
+  boundary: m.boundary,
+  drills: Array.isArray(m.drills) ? m.drills : [],
+  cue_bad: m.cue_bad,
+  cue_why: m.cue_why,
+  cue_good: m.cue_good,
+  lnote: m.lnote,
+}));
+
+const overview = `
+<p>仰式的<mark>方向控制靠「頭是不動的軸」</mark>，身體繞著頭轉，不是靠眼睛修正——因為看不到自己的手、視線朝上。這是仰式最特殊的感知難題。</p>
+<p>仰式的推進主力是<mark>上踢</mark>（足背朝後朝上，蹠屈形成推進面），對應自由式的下踢。主要肌群是股四頭肌（伸膝），與自由式的膕繩肌相反。自由式背景的泳者轉仰式常把「下踢」邏輯帶過來——這是錯誤的。</p>
+<p>仰式的旋轉不是兩側對稱轉 45°，而是<mark>單側主動</mark>：回臂側肩膀主動向上抬高、近乎觸及下巴，划水側的深沉是這個上抬的被動結果。這個不對稱結構是仰式推進力最大化的關鍵。</p>
+<p>本頁 9 個動作從「仰漂安全感」（L1 前置）開始，到「流線型（出發/轉身）」（L5–L6）結束。後段動作都需要基礎感知穩定。</p>
+`;
+
+const deeper = [
+  {
+    heading: '方向控制：身體繞著頭轉',
+    body: `
+<p>仰式的方向控制是<mark>六式中最獨特</mark>的——視覺參照缺失（看不到自己的手、頭頂朝上），方向感必須用「頭是旋轉軸不動」來建立。</p>
+<p>頭若跟著身體旋轉，方向感立刻消失、路線開始蛇行。基礎位置是耳朵與水面齊平、下巴略收、頭頂與脊椎成直線。視線略朝上方（非正後方）——朝正後方會頸部過伸。</p>
+<p>對「盯住天花板一個點」的指令常見的誤解：把它當感覺要求（感覺在盯一個點）。其實是<mark>物理檢測法</mark>——固定點是否真的固定就是方向有沒有偏移的物理證據。</p>
+`,
+  },
+  {
+    heading: '加速時旋轉不縮小（與自由式相反）',
+    body: `
+<p>仰式在速度增加時<mark>維持旋轉幅度不縮小</mark>（Gonjo 2021），與自由式相反——「衝刺時縮小旋轉提高划頻」的策略在仰式不適用。</p>
+<p>疲勞時的代償是維持肩旋轉但<mark>增加髖旋轉</mark>（核心穩定性下降，旋轉由肩轉移至髖），看似還在轉但推進效率下降。這是 L4–L5 仰式最常見的崩潰模式——不靠感覺（感覺仍然在轉），靠觀察才能發現。</p>
+<p>旋轉穩定性需要<mark>核心旋轉控制作為硬體前提</mark>；核心不足時旋轉會打滑（肩滾了但手沒固定）。這是解剖邊界，不是感知訓練能介入的範圍。</p>
+`,
+  },
+  {
+    heading: '流線型：100m 仰式最重要的單一技術預測因子',
+    body: `
+<p>100m 仰式出發加轉身合計約佔整場<mark>1/3</mark>（González-Ravé 2025），流線型品質是 100m 成績最重要的單一技術預測因子之一。</p>
+<p>出發/轉身後速度最高，阻力以 F ∝ v² 增長最快，此時流線型效益最大。雙臂伸直夾耳、頭完全入水，維持到速度降至游進速度附近才開始第一划。<mark>提前浮頭</mark>會立即拉高 Cd 造成實質速度損失。</p>
+<p>屏氣耐受與水下視野是物理限制；提前浮頭常是身體反射而非意識選擇，需逐步延長滑行距離建立。現代文獻列為僅次於旋轉的訓練優先級（L5–L6）。</p>
+`,
+  },
+];
+---
+<StrokePage
+  title="仰式"
+  titleEn="Backstroke"
+  premise={data.premise}
+  levels={['L1', 'L2', 'L3', 'L4', 'L5']}
+  overview={overview}
+  moves={moves}
+  deeper={deeper}
+/>

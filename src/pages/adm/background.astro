@@ -1,0 +1,425 @@
+---
+/**
+ * adm/background.astro — ADM 背景與發展架構
+ *
+ * 對應 content/adm/background.md（已在 src/content/）
+ * 但這裡用 Astro 重寫成 techo 風格，不是把 markdown 直接 render
+ */
+import Base from '../../layouts/Base.astro';
+import MiniLadder from '../../components/MiniLadder.astro';
+
+const ltdStages = [
+  { zh: 'Active Start', en: '主動起步', note: '游泳不直接負責此階段（紅十字會）' },
+  { zh: 'FUNdamentals', en: '基礎樂趣', note: '基本動作技能（敏捷、平衡、協調）' },
+  { zh: 'Learn to Train', en: '學習訓練', note: '漸進式挑戰，為專項訓練打基礎' },
+  { zh: 'Train to Train', en: '訓練為訓練', note: 'Podium Pathway 起點' },
+  { zh: 'Train to Compete', en: '訓練為競賽', note: 'Podium Potential' },
+  { zh: 'Train to Win', en: '訓練為勝利', note: 'Podium Success' },
+  { zh: 'Active / Competitive / Fit for Life', en: '終身活躍', note: '終身運動的三種身分' },
+];
+
+const podium = [
+  { stage: 'Train to Train', goal: 'Podium ID & Development', event: '全國錦標賽' },
+  { stage: 'Train to Compete', goal: 'Podium Potential', event: '世界盃' },
+  { stage: 'Train to Win', goal: 'Podium Success', event: '世界錦標賽 / 奧運帕運' },
+];
+
+const highPerfPriorities = [
+  '1. 奧運或帕運的獎牌台表現',
+  '2. FINA 世界錦標賽或世界帕拉游泳錦標賽獎牌台',
+  '3. 奧運 / FINA 世界錦標賽決賽（前 8）',
+];
+
+const fourSPillars = [
+  { key: 'Stamina', zh: '耐力', desc: '有氧與無氧持續能力' },
+  { key: 'Strength', zh: '肌力', desc: '最大肌力、肌耐力、爆發力、核心力量' },
+  { key: 'Speed', zh: '速度', desc: '局部速度、全身速度、無氧爆發力' },
+  { key: 'Suppleness', zh: '柔軟度', desc: '關節活動範圍、動態與靜態柔軟度' },
+];
+
+const mentalPillars = [
+  '正向態度', '動機', '目標設定',
+  '情緒識別與控制', '專注力控制', '減少錯誤',
+];
+
+const lifePillars = [
+  '自我覺察', '自我管理', '社會覺察', '人際關係技能', '負責任的決策',
+];
+
+const eightConsiderations = [
+  { title: '運動員發展根植於人類發展', body: '創造力、彈性、自制力、紀律並非與生俱來，從出生後不久便開始發展，並持續至青春期與成年早期。' },
+  { title: '發展並非線性', body: '每位運動員各有不同，其發展的速度與節奏高度個人化。具備充分知識的教練能理解個別差異性。' },
+  { title: '成長、發展與成熟（GDM）', body: '了解運動員的 GDM 有助於教練與家長提供符合發展階段的支持，促進安全、健康的人類發展。' },
+  { title: '整合支援團隊（IST）', body: '從年輕游泳選手與其家庭開始建立。成員：教練、物理治療師、運動心理師、運動生理學師、運動營養師、醫療人員。' },
+  { title: '營養與水分補充', body: '採取積極補充能量習慣的運動員更可能：有效適應訓練刺激、獲得正向表現進步、維持強健骨骼健康、減少疾病或受傷頻率。' },
+  { title: '女性運動員的特殊考量', body: '採用肌肉骨骼傷害預防計畫 + 推動積極的飲食補給習慣 + 培養接納與社群連結的氛圍 → 更少傷害 + 更高留訓率。' },
+  { title: '有障礙的運動員', body: '有障礙的運動員首先也是最重要的身份是運動員。與非障礙同儕的共同點遠多於差異。先天 vs 後天的介入不同。' },
+  { title: '各階段表格的撰寫視角', body: '體能、技術戰術 — 教練視角。心理技能、生活技能 — 游泳選手視角。' },
+];
+---
+
+<Base
+  title="ADM 背景與發展架構"
+  description="LTD 模型、獎牌台路徑、4 大支柱、8 大審閱考量——ADM 系統的脈絡。"
+>
+
+  <!-- ═══ Hero ═══ -->
+  <section class="hero">
+    <p class="eyebrow">ADM · Background</p>
+    <h1 class="hero__title">背景與發展架構</h1>
+    <p class="hero__lead">
+      為什麼是「4 支柱 × 4 階段」？這背後有兩條主軸——
+      <strong>長期運動發展模型（LTD）</strong>與<strong>獎牌台路徑（Podium Pathway）</strong>。
+    </p>
+    <MiniLadder levels={['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']} label="涵蓋全 L0–L6" />
+  </section>
+
+  <!-- ═══ 壹、LTD 模型 ═══ -->
+  <section class="sec" id="ltd">
+    <header class="ch__head">
+      <p class="eyebrow ch__no">壹</p>
+      <h2 class="ch__title">LTD 模型</h2>
+      <p class="ch__tag">Long-Term Development</p>
+    </header>
+    <p class="sec__lead">
+      長期運動發展模型（LTD，前稱 LTAD）——「為每位兒童、青少年與成人提供最佳運動與身體活動參與機會的發展框架，涵蓋成長、成熟、發展能力與運動系統整合。」
+    </p>
+    <ol class="ltd-list">
+      {ltdStages.map((s, i) => (
+        <li class="ltd-item">
+          <span class="ltd-item__no">{(i + 1).toString().padStart(2, '0')}</span>
+          <div class="ltd-item__body">
+            <h3 class="ltd-item__zh">{s.zh}</h3>
+            <p class="ltd-item__en">{s.en}</p>
+            <p class="ltd-item__note">{s.note}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- ═══ 貳、獎牌台路徑 ═══ -->
+  <section class="sec" id="podium">
+    <header class="ch__head">
+      <p class="eyebrow ch__no">貳</p>
+      <h2 class="ch__title">獎牌台路徑</h2>
+      <p class="ch__tag">Podium Pathway</p>
+    </header>
+    <p class="sec__lead">
+      「獎牌台路徑旨在培養能在最高層級國際競賽中獲勝的高水準運動員，並在奧運、帕運或世界錦標賽中為國家奪牌。」
+    </p>
+    <table class="data-table">
+      <thead>
+        <tr><th>發展階段</th><th>目標成就</th><th>對應賽事</th></tr>
+      </thead>
+      <tbody>
+        {podium.map((p) => (
+          <tr><td><strong>{p.stage}</strong></td><td>{p.goal}</td><td>{p.event}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="ch__sub">高水準表現（HP）三個層級（優先順序）</p>
+    <ol class="hp-list">
+      {highPerfPriorities.map((h) => <li>{h}</li>)}
+    </ol>
+  </section>
+
+  <!-- ═══ 參、4 大支柱 ═══ -->
+  <section class="sec" id="pillars">
+    <header class="ch__head">
+      <p class="eyebrow ch__no">參</p>
+      <h2 class="ch__title">4 大支柱</h2>
+      <p class="ch__tag">Four Pillars</p>
+    </header>
+    <p class="sec__lead">
+      ADM 由四個相互關聯的支柱組成：體能 / 技術戰術策略 / 心理技能 / 生活技能。
+      <strong>生活技能奠定基礎 → 心理技能強化 → 技術戰術執行 → 體能支撐</strong>。
+    </p>
+
+    <h3 class="ch__sub">體能（4S）</h3>
+    <div class="pill-grid">
+      {fourSPillars.map((p) => (
+        <div class="pill-card">
+          <h4 class="pill-card__zh">{p.zh}</h4>
+          <p class="pill-card__en">{p.key}</p>
+          <p class="pill-card__desc">{p.desc}</p>
+        </div>
+      ))}
+    </div>
+
+    <h3 class="ch__sub">心理技能（六大核心）</h3>
+    <ul class="capsule-list">
+      {mentalPillars.map((m) => <li class="capsule">{m}</li>)}
+    </ul>
+
+    <h3 class="ch__sub">生活技能（SEL 五大核心）</h3>
+    <ul class="capsule-list">
+      {lifePillars.map((l) => <li class="capsule">{l}</li>)}
+    </ul>
+  </section>
+
+  <!-- ═══ 肆、八大審閱考量 ═══ -->
+  <section class="sec" id="considerations">
+    <header class="ch__head">
+      <p class="eyebrow ch__no">肆</p>
+      <h2 class="ch__title">八大審閱考量</h2>
+      <p class="ch__tag">Eight Considerations</p>
+    </header>
+    <p class="sec__lead">審閱 ADM 時要帶進來的前提與脈絡。</p>
+    <ol class="cons-list">
+      {eightConsiderations.map((c, i) => (
+        <li class="cons">
+          <span class="cons__no">{(i + 1).toString().padStart(2, '0')}</span>
+          <div class="cons__body">
+            <h3 class="cons__title">{c.title}</h3>
+            <p class="cons__body-text">{c.body}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <style>
+    .hero {
+      padding: var(--space-6) 0 var(--space-5);
+      border-bottom: 2px solid var(--color-rule-strong);
+    }
+    .hero__title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(var(--type-2xl), 5vw, var(--type-3xl));
+      line-height: 1.1;
+      margin: var(--space-2) 0 var(--space-3);
+    }
+    .hero__lead {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+    .hero :global(.mini-ladder) { margin-top: var(--space-3); }
+
+    .sec {
+      margin-top: var(--space-7);
+      padding-top: var(--space-4);
+      border-top: 2px solid var(--color-rule-strong);
+      scroll-margin-top: var(--space-3);
+    }
+    .sec__lead {
+      font-size: var(--type-sm);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-3);
+    }
+    .ch__head {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .ch__no { margin: 0; }
+    .ch__title {
+      font-family: var(--font-serif);
+      font-size: clamp(var(--type-lg), 3.5vw, var(--type-xl));
+      font-weight: 600;
+      margin: 0;
+    }
+    .ch__tag {
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      letter-spacing: var(--tracking-mono);
+      color: var(--color-sub);
+      margin: 0;
+    }
+    .ch__sub {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: var(--space-4) 0 var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--color-rule);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-2) 0 var(--space-3);
+      font-size: var(--type-sm);
+    }
+    .data-table th, .data-table td {
+      padding: var(--space-2);
+      text-align: left;
+      border: 1px solid var(--color-rule);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .data-table thead th {
+      background: var(--color-bg-soft);
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      letter-spacing: var(--tracking-mono);
+      text-transform: uppercase;
+      color: var(--color-ink-soft);
+      font-weight: 600;
+    }
+    .data-table strong { color: var(--color-accent); }
+
+    .hp-list {
+      list-style: none;
+      counter-reset: hp;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .hp-list li {
+      padding: var(--space-2);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+      font-size: var(--type-sm);
+      color: var(--color-ink);
+    }
+
+    /* LTD list */
+    .ltd-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .ltd-item {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+    }
+    .ltd-item__no {
+      font-family: var(--font-mono);
+      font-size: var(--type-sm);
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+    .ltd-item__body { display: flex; flex-direction: column; gap: 2px; }
+    .ltd-item__zh {
+      font-family: var(--font-serif);
+      font-size: var(--type-sm);
+      font-weight: 600;
+      margin: 0;
+    }
+    .ltd-item__en {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      color: var(--color-sub);
+      letter-spacing: var(--tracking-mono);
+      margin: 0;
+    }
+    .ltd-item__note {
+      font-size: var(--type-xs);
+      color: var(--color-ink-soft);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Pill grid for 4S */
+    .pill-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2);
+    }
+    .pill-card {
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+    }
+    .pill-card__zh {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0 0 2px;
+    }
+    .pill-card__en {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      color: var(--color-accent);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      margin: 0 0 var(--space-1);
+    }
+    .pill-card__desc {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Capsule list (mental/life skills) */
+    .capsule-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+    .capsule {
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+      font-size: var(--type-sm);
+      color: var(--color-ink);
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* Considerations */
+    .cons-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .cons {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+    }
+    .cons__no {
+      font-family: var(--font-mono);
+      font-size: var(--type-md);
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+    .cons__body { display: flex; flex-direction: column; gap: var(--space-1); }
+    .cons__title {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      margin: 0;
+    }
+    .cons__body-text {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    @media (max-width: 600px) {
+      .pill-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</Base>

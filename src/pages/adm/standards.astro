@@ -1,0 +1,444 @@
+---
+/**
+ * adm/standards.astro — 22 項技術標準卡片 + 泳式 filter
+ *
+ * 設計依據：
+ * - 從 technical-analysis.yaml 188 點中選「概念 / 技術風格 / 硬體邊界 / 對照」四類
+ *   的代表點共 22 項作為核心技術標準
+ * - 泳式 filter 純前端 JS（inline data）
+ * - 點開看「物理機制 + 實務啟示」
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import yaml from 'js-yaml';
+import Base from '../../layouts/Base.astro';
+import MiniLadder from '../../components/MiniLadder.astro';
+
+const dataPath = (p: string) => resolve(process.cwd(), 'src/data', p);
+const raw = yaml.load(readFileSync(dataPath('technical-analysis.yaml'), 'utf8')) as any;
+const allPoints: any[] = raw.points ?? [];
+
+// 取代表性 22 項：每個 category 保留前幾個（按 stroke 平衡）
+// 優先選 category = concept / style / hardware / comparison
+const priorityCats = ['concept', 'style', 'hardware', 'comparison'];
+
+function selectStandards(): any[] {
+  const picked: any[] = [];
+  const seen = new Set<string>();
+  // 每個 stroke 挑 2-3 個概念類
+  const strokeTargets: Record<string, number> = {
+    free: 4, back: 3, breast: 3, fly: 3, udk: 3, 'starts-turns': 3,
+  };
+
+  for (const stroke of Object.keys(strokeTargets)) {
+    const candidates = allPoints.filter(
+      (p) => p.stroke === stroke && priorityCats.includes(p.category)
+    );
+    const want = strokeTargets[stroke];
+    let got = 0;
+    for (const c of candidates) {
+      if (got >= want) break;
+      if (seen.has(c.id)) continue;
+      picked.push(c);
+      seen.add(c.id);
+      got++;
+    }
+  }
+
+  // 如果不足 22 個，補其他概念
+  if (picked.length < 22) {
+    for (const p of allPoints) {
+      if (picked.length >= 22) break;
+      if (seen.has(p.id)) continue;
+      if (priorityCats.includes(p.category)) {
+        picked.push(p);
+        seen.add(p.id);
+      }
+    }
+  }
+  return picked;
+}
+
+const standards = selectStandards();
+
+const strokes = [
+  { key: 'free', zh: '自由式' },
+  { key: 'back', zh: '仰式' },
+  { key: 'breast', zh: '蛙式' },
+  { key: 'fly', zh: '蝶式' },
+  { key: 'udk', zh: '海豚踢' },
+  { key: 'starts-turns', zh: '出發轉身' },
+];
+
+const categoryNames: Record<string, string> = {
+  concept: '概念',
+  style: '技術風格',
+  hardware: '硬體邊界',
+  comparison: '四式對照',
+  'stroke-cycle': '划手週期',
+  kick: '踢水',
+  rotation: '身體旋轉',
+  undulation: '身體波動',
+  timing: '時序',
+  head: '頭部與換氣',
+  tempo: '划頻划距',
+  streamline: '流線',
+  depth: '深度',
+  errors: '錯誤',
+  fatigue: '疲勞',
+  watersense: '水感',
+};
+
+const standardsJson = JSON.stringify(standards);
+const strokesJson = JSON.stringify(strokes);
+const categoryNamesJson = JSON.stringify(categoryNames);
+---
+
+<Base
+  title="ADM 技術標準"
+  description="22 項技術標準卡片：物理機制 + 實務啟示。可按泳式 filter。"
+>
+
+  <!-- ═══ Hero ═══ -->
+  <section class="hero">
+    <p class="eyebrow">ADM · Technical Standards</p>
+    <h1 class="hero__title">技術標準</h1>
+    <p class="hero__lead">
+      22 項技術標準卡片——從四式深度技術分析中彙整的核心概念。
+      每張含<strong>物理機制</strong>（為什麼）與<strong>實務啟示</strong>（所以怎麼做）。
+    </p>
+    <MiniLadder levels={['L2', 'L3', 'L4', 'L5', 'L6']} label="主要在 L2–L6 應用" />
+  </section>
+
+  <!-- ═══ Filter + Grid ═══ -->
+  <section class="sec">
+    <header class="sec__head">
+      <h2 class="sec__title"><span class="sec__no">壹</span>22 項標準</h2>
+      <span class="eyebrow sec__tag">Filtered by Stroke</span>
+    </header>
+    <p class="sec__lead">按泳式 filter；不選 = 顯示全部。可展開看物理機制。</p>
+
+    <!-- Stroke filter -->
+    <form class="filter" id="std-filter" data-standards={standardsJson} data-strokes={strokesJson} data-cats={categoryNamesJson} aria-label="泳式 filter">
+      <fieldset class="filter__group">
+        <legend class="filter__legend">泳式</legend>
+        <div class="filter__pills">
+          {strokes.map((s) => (
+            <label class="pill">
+              <input type="radio" name="stroke" value={s.key} />
+              <span>{s.zh}</span>
+            </label>
+          ))}
+          <label class="pill">
+            <input type="radio" name="stroke" value="" checked />
+            <span>全部</span>
+          </label>
+        </div>
+      </fieldset>
+      <p class="filter__count" aria-live="polite" id="std-count">
+        共 <strong>{standards.length}</strong> 項
+      </p>
+    </form>
+
+    <!-- Cards -->
+    <div class="std-grid" id="std-grid">
+      {standards.map((s) => (
+        <article class="std-card" data-stroke={s.stroke} data-cat={s.category}>
+          <header class="std-card__head">
+            <span class="std-card__id">{s.id}</span>
+            <span class="std-card__cat">{categoryNames[s.category] ?? s.category}</span>
+          </header>
+          <h3 class="std-card__title">{s.title}</h3>
+          <p class="std-card__summary">{s.summary}</p>
+          <details class="std-card__details">
+            <summary>看物理機制 + 實務啟示</summary>
+            <div class="std-card__body">
+              <div class="std-block">
+                <span class="std-block__tag">
+                  機制 {s.mechanism?.certainty ?? ''}
+                </span>
+                <p>{s.mechanism?.text ?? ''}</p>
+              </div>
+              <div class="std-block std-block--imp">
+                <span class="std-block__tag">實務啟示</span>
+                <p>{s.practical_implication ?? ''}</p>
+              </div>
+            </div>
+          </details>
+          <footer class="std-card__foot">
+            <span class="std-card__stroke">
+              {strokes.find((st) => st.key === s.stroke)?.zh ?? s.stroke}
+            </span>
+          </footer>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══ Client-side filter ═══ -->
+  <script is:inline>
+    (function () {
+      const filterEl = document.getElementById('std-filter');
+      const grid = document.getElementById('std-grid');
+      const countEl = document.getElementById('std-count');
+      const cards = Array.from(grid.querySelectorAll('.std-card'));
+      const total = cards.length;
+
+      function applyFilter() {
+        const sel = filterEl.querySelector('input[name="stroke"]:checked');
+        const val = sel ? sel.value : '';
+        let visible = 0;
+        cards.forEach((c) => {
+          const show = !val || c.dataset.stroke === val;
+          c.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        countEl.innerHTML = '共 <strong>' + visible + '</strong> 項 / ' + total;
+      }
+      filterEl.addEventListener('change', applyFilter);
+    })();
+  </script>
+
+  <style>
+    .hero {
+      padding: var(--space-6) 0 var(--space-5);
+      border-bottom: 2px solid var(--color-rule-strong);
+    }
+    .hero__title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(var(--type-2xl), 5vw, var(--type-3xl));
+      line-height: 1.1;
+      margin: var(--space-2) 0 var(--space-3);
+    }
+    .hero__lead {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-4);
+    }
+    .hero :global(.mini-ladder) { margin-top: var(--space-3); }
+
+    .sec {
+      margin-top: var(--space-7);
+      padding-top: var(--space-4);
+      border-top: 2px solid var(--color-rule-strong);
+    }
+    .sec__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .sec__title {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: clamp(var(--type-xl), 4vw, var(--type-2xl));
+      margin: 0;
+    }
+    .sec__no {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      color: var(--color-accent);
+      margin-right: 0.4em;
+    }
+    .sec__tag { color: var(--color-sub); }
+    .sec__lead {
+      font-size: var(--type-sm);
+      line-height: var(--line-body-cjk);
+      color: var(--color-ink-soft);
+      max-width: var(--measure-narrow);
+      margin-bottom: var(--space-3);
+    }
+
+    /* Filter */
+    .filter {
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-soft);
+      padding: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+    }
+    .filter__group {
+      border: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .filter__legend {
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      color: var(--color-sub);
+    }
+    .filter__pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .pill input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .pill span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: var(--space-1) var(--space-3);
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-elev);
+      font-size: var(--type-sm);
+      color: var(--color-ink);
+      transition: background-color var(--duration-short) var(--ease-standard),
+                  border-color var(--duration-short) var(--ease-standard);
+    }
+    .pill:hover span { border-color: var(--color-accent); }
+    .pill input:checked + span {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: var(--color-bg);
+    }
+    .pill input:focus-visible + span {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+    .filter__count {
+      font-family: var(--font-mono);
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      margin: 0;
+    }
+    .filter__count strong {
+      color: var(--color-accent);
+      font-size: var(--type-md);
+    }
+
+    /* Grid */
+    .std-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--space-3);
+    }
+    .std-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border: 1px solid var(--color-rule);
+      background: var(--color-bg-elev);
+    }
+    .std-card__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .std-card__id {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-mono);
+      color: var(--color-accent);
+      text-transform: uppercase;
+    }
+    .std-card__cat {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      color: var(--color-sub);
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid var(--color-rule);
+    }
+    .std-card__title {
+      font-family: var(--font-serif);
+      font-size: var(--type-md);
+      font-weight: 600;
+      line-height: 1.3;
+      margin: 0;
+    }
+    .std-card__summary {
+      font-size: var(--type-sm);
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      margin: 0;
+    }
+    .std-card__details {
+      border-top: 1px dashed var(--color-rule);
+      padding-top: var(--space-2);
+    }
+    .std-card__details summary {
+      list-style: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: var(--type-xs);
+      color: var(--color-accent);
+      letter-spacing: var(--tracking-mono);
+      padding: var(--space-1) 0;
+    }
+    .std-card__details summary::-webkit-details-marker { display: none; }
+    .std-card__details summary:hover { color: var(--color-accent-2); }
+    .std-card__body {
+      padding: var(--space-2) 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .std-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .std-block__tag {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-eyebrow);
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+    .std-block p {
+      font-size: var(--type-xs);
+      color: var(--color-ink-soft);
+      line-height: 1.7;
+      margin: 0;
+    }
+    .std-block--imp {
+      background: var(--color-bg-soft);
+      padding: var(--space-2);
+      border-left: 2px solid var(--color-accent);
+    }
+    .std-card__foot {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: var(--space-2);
+      border-top: 1px dashed var(--color-rule);
+    }
+    .std-card__stroke {
+      font-family: var(--font-mono);
+      font-size: var(--type-tiny);
+      letter-spacing: var(--tracking-mono);
+      color: var(--color-sub);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 600px) {
+      .filter { flex-direction: column; align-items: stretch; }
+      .std-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</Base>

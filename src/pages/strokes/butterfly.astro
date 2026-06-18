@@ -1,0 +1,76 @@
+---
+/**
+ * butterfly.astro — 蝶式內頁
+ *
+ * 資料源：src/data/fly.yaml（9 個 moves）
+ * Frontmatter：src/content/butterfly/_index.md
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import StrokePage from '../../components/StrokePage.astro';
+import type { Move } from '../../components/StrokePage.astro';
+
+const yamlPath = path.join(process.cwd(), 'src/data/fly.yaml');
+const data = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as {
+  premise: string;
+  moves: Move[];
+};
+
+const moves: Move[] = data.moves.map((m: any) => ({
+  n: m.n,
+  name: m.name,
+  one: m.one,
+  l: m.l,
+  physical: m.physical,
+  boundary: m.boundary,
+  drills: Array.isArray(m.drills) ? m.drills : [],
+  cue_bad: m.cue_bad,
+  cue_why: m.cue_why,
+  cue_good: m.cue_good,
+  lnote: m.lnote,
+}));
+
+const overview = `
+<p>蝶式的推進是<mark>頭到尾方向波動傳遞</mark>，不是手腳上下擺動；波動起於壓胸，終於腳尖。腳踝是終點加速器，不是發力源。</p>
+<p>波動起源於<mark>胸骨/下肋主動下壓</mark>，沿體軸傳至踝，振幅逐節放大（Sanders 1995 正弦 H1 波、鞭打力學）。胸椎活動度是波動觸發的<mark>硬體前提</mark>——胸椎僵硬者胸部下壓幅度受限，腰部會過度代償。</p>
+<p>蝶式有兩個推進峰值：第一踢（入水踢）加速度貢獻 1.9 m/s²，內划爆發（Mason 1992）加速度峰值 4.2 m/s²——這是六式中最大單一推進相。第二踢與 Upsweep 同步形成第二推進峰值（2.3 m/s²）。疲勞後最先崩潰的就是這個協調環節。</p>
+<p>本頁 9 個動作從「波動啟動」（前置感知）開始，到「空中恢復」（L4–L5）結束。涵蓋蝶式特有的雙推進峰值協調。</p>
+`;
+
+const deeper = [
+  {
+    heading: '波動傳遞：胸椎下壓是起點',
+    body: `
+<p>蝶式的推進不是「手腳上下擺動」，是<mark>頭尾方向波動傳遞</mark>。波動起源於胸骨/下肋主動下壓，沿體軸傳至踝，振幅逐節放大。</p>
+<p>胸椎活動度是波動觸發的<mark>硬體前提</mark>。胸椎僵硬者胸部下壓幅度受限，腰部會過度代償；意識放臀部會用主動上下代償，波動傳不到腿尖。</p>
+<p>陸上示範時常把蝶式描述為「臀部上下動」——這是視覺副產品，不是因果。臀部是波動放大器（中繼），不是發力源。正確 cue 是「壓胸起波」（頭部+胸骨協同下壓）。</p>
+`,
+  },
+  {
+    heading: '兩個推進峰值的時序耦合',
+    body: `
+<p>蝶式週期有兩個推進峰值：<mark>第一踢（入水踢）</mark>提供 1.9 m/s²，<mark>內划爆發</mark>提供 4.2 m/s²。第二踢與 Upsweep 同步形成第二峰值 2.3 m/s²。</p>
+<p>這兩個峰值的時序耦合決定效率：第二踢應在<mark>手肘伸展前、雙手通過肚臍時啟動</mark>，比手臂出水更早。太晚則須用背部肌肉主動拉手出水，代價高昂。</p>
+<p>「外划輕內划爆」是核心節奏：外划是靜態定位（EVF 起始位置），須保留爆發的前向空間。刻意走 S 形路徑會增加橫向阻力、拉長外划時間——菁英水下路徑更接近直線後推。</p>
+`,
+  },
+  {
+    heading: '換氣方向：下巴向前不向上',
+    body: `
+<p>呼吸方向須<mark>向前（chin forward），不向上（head up）</mark>。向前：下巴沿波動切線前推，髖部維持高位，波動鏈延續。向上：頸椎後仰、頸肌收縮，髖部強制下沉，Cd 大幅上升，波動鏈在此斷裂。</p>
+<p>上身上浮是波動帶起的，不是主動抬頭。成人頭部約 5 公斤，向上抬升須用手臂/踢腿大力抵消，頸椎後仰使波動鏈斷裂、髖部下沉。</p>
+<p>側向換氣為合法替代，不應禁止——L3–L4 學員若正面換氣建立困難，先學側向換氣建立換氣穩定，再回頭修正面換氣。</p>
+`,
+  },
+];
+---
+<StrokePage
+  title="蝶式"
+  titleEn="Butterfly"
+  premise={data.premise}
+  levels={['L2', 'L3', 'L4', 'L5']}
+  overview={overview}
+  moves={moves}
+  deeper={deeper}
+/>
